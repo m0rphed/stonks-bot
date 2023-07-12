@@ -30,10 +30,10 @@ def authenticate_user(client: PyrogramClient, message: Message):
     """Handler for "/auth" command
     """
 
-    # Telegram's User ID is supposed to be unique (not affected by username change etc.)
+    # telegram's user id is supposed to be unique (not affected by username change etc.)
     user_id = message.from_user.id
 
-    # Check if the user is already authenticated
+    # check if the user is already authenticated
     user = supabase.table("users").select().eq(
         "user_id", user_id).limit(1).execute()
 
@@ -41,7 +41,7 @@ def authenticate_user(client: PyrogramClient, message: Message):
         message.reply("You are already authenticated.")
         return
 
-    # Check if the user is a member of a specific channel
+    # check if the user is a member of a specific channel
     channel_username = "YOUR_CHANNEL_USERNAME"
     try:
         app.get_chat_member(chat_id=channel_username, user_id=user_id)
@@ -49,34 +49,34 @@ def authenticate_user(client: PyrogramClient, message: Message):
         message.reply("Please join the required channel to authenticate.")
         return
 
-    # Save user's unique id to Supabase
+    # save user's unique id to DB
     supabase.table("users").insert({"user_id": user_id}).execute()
     message.reply("Authentication successful.")
 
 
 @app.on_message(filters.command("track"))
 def track_stock(client: PyrogramClient, message: Message):
-    """Handler for "/track <stock_ticket> <price_to_be_reached>" command
+    """Handler for "/track <stock_ticker> <price_to_be_reached>" command
     """
 
     user_id = message.from_user.id
     args = message.text.split(" ")[1:]
     if len(args) != 2:
-        message.reply("Please provide a stock ticket and price to be reached.")
+        message.reply("Please provide a stock ticker and price to be reached.")
         return
 
-    stock_ticket, price_to_be_reached = args
+    stock_ticker, price_to_be_reached = args
 
-    # Save tracking details to Supabase linked to user's telegram account
+    # save tracking details to Supabase linked to user's telegram account
     supabase.table("tracking").insert({
         "user_id": user_id,
-        "stock_ticket": stock_ticket,
+        "stock_ticker": stock_ticker,
         "price_to_be_reached": price_to_be_reached
     }).execute()
 
     message.reply("Stock tracking started successfully.")
 
 
-# Run the bot
+# run the bot
 if __name__ == "__name__":
     app.run()
