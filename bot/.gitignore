@@ -234,3 +234,6 @@ secret/
 
 # plotting and stock analysis data
 data/
+
+# ignore telegram session
+*.session*
