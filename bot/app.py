@@ -34,10 +34,10 @@ def authenticate_user(client: PyrogramClient, message: Message):
     user_id = message.from_user.id
 
     # check if the user is already authenticated
-    user = supabase.table("users").select().eq(
-        "user_id", user_id).limit(1).execute()
+    user = supabase.table("users").select("*").eq(
+        "user_id", user_id).execute()
 
-    if len(user["data"]) > 0:
+    if len(user.data) > 0:
         message.reply("You are already authenticated.")
         return
 
