@@ -1,0 +1,15 @@
+
+[project]
+name = ""
+version = ""
+description = ""
+authors = [
+    {name = "Vic Khov", email = "victorkhovtko@gmail.com"},
+]
+dependencies = [
+    "pyrogram>=2.0.106",
+    "toml>=0.10.2",
+    "tinkoff-investments>=0.2.0b58",
+]
+requires-python = ">=3.11"
+license = {text = "MIT"}
