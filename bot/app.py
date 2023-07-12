@@ -77,7 +77,7 @@ def track_stock(client: PyrogramClient, message: Message):
 
     # create reply message with stock info and a button to confirm tracking
     reply_message = f"Stock information:\n\n" \
-                    f"Ticket: {stock_info.ticket}\n" \
+                    f"Ticket: {stock_info.ticker}\n" \
                     f"Price: {stock_info.price}\n" \
                     f"Exchange: {stock_info.exchange}\n" \
                     f"Stock Real Name: {stock_info.stock_real_name}\n" \
