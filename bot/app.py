@@ -121,7 +121,7 @@ def handle_button_click(client: PyrogramClient, callback_query: CallbackQuery):
 
 
 # run the bot
-if __name__ == "__name__":
+if __name__ == "__main__":
     print("Starting bot...")
     app.run()
     print("STONKS!")
