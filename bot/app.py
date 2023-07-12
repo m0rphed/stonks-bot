@@ -41,13 +41,14 @@ def authenticate_user(client: PyrogramClient, message: Message):
         message.reply("You are already authenticated.")
         return
 
-    # check if the user is a member of a specific channel
-    channel_username = "YOUR_CHANNEL_USERNAME"
-    try:
-        app.get_chat_member(chat_id=channel_username, user_id=user_id)
-    except UserNotParticipant:
-        message.reply("Please join the required channel to authenticate.")
-        return
+    # TODO: why do we even need to check THAT???
+    # # check if the user is a member of a specific channel
+    # channel_username = "YOUR_CHANNEL_USERNAME"
+    # try:
+    #     app.get_chat_member(chat_id=channel_username, user_id=user_id)
+    # except UserNotParticipant:
+    #     message.reply("Please join the required channel to authenticate.")
+    #     return
 
     # save user's unique id to DB
     supabase.table("users").insert({"user_id": user_id}).execute()
