@@ -29,7 +29,7 @@ ts = TimeSeries(key=API_KEY)
 fx = ForeignExchange(key=API_KEY)
 
 
-def get_current_stock_info(ticker: str) -> StockInfo | None:
+def get_stock_info(ticker: str) -> StockInfo | None:
     try:
         # Retrieve stock data
         data, meta_data = ts.get_quote_endpoint(symbol=ticker)

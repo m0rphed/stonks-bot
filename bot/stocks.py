@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 from datetime import datetime
 from alpha_vantage.timeseries import TimeSeries
 from creds import get_from_toml
-from stocks_alpha_vantage import get_currency_pair_info, get_current_stock_info
+from stocks_alpha_vantage import get_currency_pair_info, get_stock_info
 
 
 def test_small():
@@ -29,7 +29,7 @@ def test_small():
 
 
 def test_functions():
-    ticker_info = get_current_stock_info("MSFT")
+    ticker_info = get_stock_info("MSFT")
     print(ticker_info)
 
     curr_info = get_currency_pair_info("USD", "JPY")
