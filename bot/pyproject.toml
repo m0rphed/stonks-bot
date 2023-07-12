@@ -11,6 +11,12 @@ dependencies = [
     "toml>=0.10.2",
     "tinkoff-investments>=0.2.0b58",
     "supabase>=1.0.3",
+    "alpha-vantage>=2.3.1",
 ]
 requires-python = ">=3.11"
 license = {text = "MIT"}
+
+[tool.pdm.dev-dependencies]
+plotting = [
+    "matplotlib>=3.7.2",
+]
