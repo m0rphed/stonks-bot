@@ -60,7 +60,6 @@ def track_stock(client: PyrogramClient, message: Message):
     """Handler for "/track <stock_ticker> <price_to_be_reached>" command
     """
 
-    user_id = message.from_user.id
     args = message.text.split(" ")[1:]
     if len(args) != 2:
         message.reply("Please provide a stock ticker and price to be reached.")
@@ -101,7 +100,7 @@ def handle_button_click(client: PyrogramClient, callback_query: CallbackQuery):
     user_id = callback_query.from_user.id
     data = callback_query.data
     if data.startswith("confirm_track_"):
-        prefix, price = data.split("-")
+        prefix, on_price_value = data.split("-")
         stock_ticker = prefix.replace("confirm_track_", "")
 
         # retrieve stock info using get_stock_info
@@ -114,8 +113,8 @@ def handle_button_click(client: PyrogramClient, callback_query: CallbackQuery):
         # save tracking details to Supabase linked to user's telegram account
         supabase.table("tracking").insert({
             "user_id": user_id,
-            "stock_ticker": stock_ticker,
-            "price_to_be_reached": price
+            "ticker": stock_ticker,
+            "on_price_value": on_price_value
         }).execute()
 
         callback_query.answer("Stock tracking started successfully.")
@@ -123,4 +122,6 @@ def handle_button_click(client: PyrogramClient, callback_query: CallbackQuery):
 
 # run the bot
 if __name__ == "__name__":
+    print("Starting bot...")
     app.run()
+    print("STONKS!")
