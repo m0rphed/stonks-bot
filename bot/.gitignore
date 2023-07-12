@@ -231,3 +231,6 @@ secret/
 
 # ignore VS Code settings
 .vscode/
+
+# plotting and stock analysis data
+data/
