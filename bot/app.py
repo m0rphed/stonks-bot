@@ -21,7 +21,7 @@ app = PyrogramClient(
 # set bot users DB (using: https://supabase.com/)
 sb_keys = get_from_toml("supabase")
 supabase_url: str = sb_keys["url"]
-supabase_key: str = sb_keys("key")
+supabase_key: str = sb_keys["key"]
 supabase: DbClient = create_client(supabase_url, supabase_key)
 
 
