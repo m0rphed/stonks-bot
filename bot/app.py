@@ -76,6 +76,21 @@ def track_stock(client: PyrogramClient, message: Message):
 
     message.reply("Stock tracking started successfully.")
 
+@app.on_message(filters.command("start"))
+def start_command(client, message):
+    # Generate a unique deep link for the user
+    deep_link = app.export_session_string()
+
+    # Create an inline keyboard with a button that opens the bot with the deep link
+    keyboard = InlineKeyboardMarkup(
+        [[InlineKeyboardButton(
+            "Authenticate", url=f"t.me/my_bot?start={deep_link}")]]
+    )
+
+    # Send the user a message with the inline keyboard
+    message.reply_text(
+        "Click the button below to authenticate:", reply_markup=keyboard)
+
 
 # Run the bot
 if __name__ == "__name__":
