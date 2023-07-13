@@ -2,7 +2,7 @@ import emoji
 import creds
 from alpha_vantage.async_support.timeseries import TimeSeries as TimeSeriesAsync
 from alpha_vantage.async_support.foreignexchange import ForeignExchange as ForeignExchangeAsync
-from fin_instruments_dto import InstrumentInfo, StockInfo, CurrencyInfo
+from fin_instruments_dto import InstrumentInfo, StockInfo, CurrencyPairInfo
 
 # Alpha Vantage API key
 ALPHA_VANTAGE_KEY = creds.get_from_env(
@@ -86,7 +86,7 @@ async def get_stock_info(ticker: str) -> StockInfo | None:
         return None
 
 
-async def get_curr_pair_info(from_curr: str, to_curr: str) -> CurrencyInfo | None:
+async def get_curr_pair_info(from_curr: str, to_curr: str) -> CurrencyPairInfo | None:
     try:
         # init alpha-vantage client for foreign exchange data
         fx = ForeignExchangeAsync(key=ALPHA_VANTAGE_KEY)

@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+import datetime
 
 
 @dataclass
@@ -11,10 +12,19 @@ class StockInfo:
 
 
 @dataclass
-class CurrencyInfo:
-    currency_from: str
-    currency_to: str
+class CurrencyPairInfo:
+    code_from: str
+    code_to: str
+
+    name_from: str
+    name_to: str
+
     rate: float
+
+    price_bid: float
+    price_ask: float
+    last_datetime: datetime.datetime
+    tz: str = "UTC"
     per_day_price_delta_percentage: float | None = None
 
 
