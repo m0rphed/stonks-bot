@@ -58,7 +58,7 @@ async def track_stock(client: PyrogramClient, message: Message):
     stock_ticker, price_to_be_reached = args
 
     # retrieve stock info using get_stock_info
-    stock_info = get_stock_info(stock_ticker)
+    stock_info = await get_stock_info(stock_ticker)
 
     if stock_info is None:
         await message.reply(
@@ -94,7 +94,7 @@ async def handle_button_click(client: PyrogramClient, callback_query: CallbackQu
         stock_ticker = prefix.replace("confirm_track_", "")
 
         # retrieve stock info using get_stock_info
-        stock_info = get_stock_info(stock_ticker)
+        stock_info = await get_stock_info(stock_ticker)
 
         if stock_info is None:
             await callback_query.answer("Failed to retrieve stock data.")

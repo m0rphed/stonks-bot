@@ -1,25 +1,24 @@
-from alpha_vantage.timeseries import TimeSeries
-from alpha_vantage.foreignexchange import ForeignExchange
 import creds
-
+from alpha_vantage.async_support.timeseries import TimeSeries as TimeSeriesAsync
+from alpha_vantage.async_support.foreignexchange import ForeignExchange as ForeignExchangeAsync
 from fin_instruments_dto import StockInfo, CurrencyInfo
 
 # Alpha Vantage API key
-ALPHA_VANTAGE_KEY = creds.get_from_env("ALPHA_VANTAGE_TOKEN")
-
-# Initialize Alpha Vantage clients
-ts = TimeSeries(key=ALPHA_VANTAGE_KEY)
-fx = ForeignExchange(key=ALPHA_VANTAGE_KEY)
+ALPHA_VANTAGE_KEY = creds.get_from_env(
+    "ALPHA_VANTAGE_TOKEN", env_file_path="./secret/.env")
 
 
 async def get_stock_info(ticker: str) -> StockInfo | None:
     try:
-        # Retrieve stock data
+        # init alpha-vantage client for stock market data
+        ts = TimeSeriesAsync(key=ALPHA_VANTAGE_KEY)
+        # retrieve stock data by specified ticker symbol
         data, _meta_data = await ts.get_quote_endpoint(symbol=ticker)
+        await ts.close()
 
         exchange = "NASDAQ or NYSE"  # TODO: find out which :D
 
-        # Extract relevant information from the response
+        # extract relevant information from the response
         # TODO: find a way to extract real company name from the API
         stock_real_name = data["01. symbol"]
         price = data["05. price"]
@@ -34,9 +33,12 @@ async def get_stock_info(ticker: str) -> StockInfo | None:
 
 async def get_currency_pair_info(from_curr: str, to_curr: str) -> CurrencyInfo | None:
     try:
+        # init alpha-vantage client for foreign exchange data
+        fx = ForeignExchangeAsync(key=ALPHA_VANTAGE_KEY)
         # retrieve currency exchange data
         data, _ = await fx.get_currency_exchange_rate(
             from_currency=from_curr, to_currency=to_curr)
+        await fx.close()
 
         # extract relevant information from the response
         curr_from_name = data["2. From_Currency Name"]
