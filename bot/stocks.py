@@ -4,8 +4,11 @@ import matplotlib.pyplot as plt
 
 from datetime import datetime
 
-from stocks_alpha_vantage import get_currency_pair_info, get_stock_info
+from stocks_alpha_vantage import search_for_instrument, get_curr_pair_info, get_stock_info
 from alpha_vantage.async_support.timeseries import TimeSeries as TimeSeriesAsync
+
+ALPHA_VANTAGE_KEY = creds.get_from_env(
+    "ALPHA_VANTAGE_TOKEN", env_file_path="./secret/.env")
 
 
 def test_small_sync():
@@ -34,13 +37,12 @@ async def test_data_retrieval():
     ticker_info = await get_stock_info("MSFT")
     print(ticker_info)
 
-    curr_info = await get_currency_pair_info("USD", "JPY")
+    curr_info = await get_curr_pair_info("USD", "JPY")
     print(curr_info)
 
 
 async def get_data(symbol):
-    ts = TimeSeriesAsync(key=creds.get_from_env(
-        "ALPHA_VANTAGE_TOKEN", env_file_path="./secret/.env"))
+    ts = TimeSeriesAsync(key=ALPHA_VANTAGE_KEY)
     data, _ = await ts.get_quote_endpoint(symbol)
     await ts.close()
     return data
@@ -67,7 +69,14 @@ def run_test_retrieval():
     loop.close()
 
 
+async def test_symbol_search(text: str):
+    instruments = await search_for_instrument(text)
+    for i in instruments:
+        print(i)
+
+
 if __name__ == "__main__":
     # test_small_sync()
     # run_simple_test()
-    asyncio.run(test_data_retrieval())
+    # asyncio.run(test_data_retrieval())
+    asyncio.run(test_symbol_search("Microsoft"))

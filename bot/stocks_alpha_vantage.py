@@ -1,11 +1,38 @@
 import creds
 from alpha_vantage.async_support.timeseries import TimeSeries as TimeSeriesAsync
 from alpha_vantage.async_support.foreignexchange import ForeignExchange as ForeignExchangeAsync
-from fin_instruments_dto import StockInfo, CurrencyInfo
+from fin_instruments_dto import InstrumentInfo, StockInfo, CurrencyInfo
 
 # Alpha Vantage API key
 ALPHA_VANTAGE_KEY = creds.get_from_env(
     "ALPHA_VANTAGE_TOKEN", env_file_path="./secret/.env")
+
+
+def _search_res_to_dto(data: dict) -> InstrumentInfo:
+    inst = InstrumentInfo(
+        symbol=data["1. symbol"],               # "MSF0.FRK"
+        name=data["2. name"],                   # "MICROSOFT CORP. CDR"
+        instrument_type=data["3. type"],        # "Equity"
+        region=data["4. region"],               # "Frankfurt"
+        market_open=data["5. marketOpen"],      # "08:00"
+        market_close=data["6. marketClose"],    # "20:00"
+        timezone=data["7. timezone"],           # "UTC+02"
+        currency_symbol=data["8. currency"]     # "EUR"
+    )
+    return inst
+
+
+async def search_for_instrument(query: str) -> list[InstrumentInfo] | None:
+    try:
+        ts = TimeSeriesAsync(key=ALPHA_VANTAGE_KEY)
+        # run search query and retrieve matching instruments
+        search_res, _ = await ts.get_symbol_search(query)
+        await ts.close()
+        return [_search_res_to_dto(sr) for sr in search_res]
+
+    except Exception as e:
+        print("Error running search query:", str(e))
+        return None
 
 
 async def get_stock_info(ticker: str) -> StockInfo | None:
@@ -26,12 +53,13 @@ async def get_stock_info(ticker: str) -> StockInfo | None:
             data["10. change percent"][:-1])
 
         return StockInfo(ticker, price, exchange, stock_real_name, per_day_price_delta_percentage)
+
     except Exception as e:
         print("Error retrieving stock data:", str(e))
         return None
 
 
-async def get_currency_pair_info(from_curr: str, to_curr: str) -> CurrencyInfo | None:
+async def get_curr_pair_info(from_curr: str, to_curr: str) -> CurrencyInfo | None:
     try:
         # init alpha-vantage client for foreign exchange data
         fx = ForeignExchangeAsync(key=ALPHA_VANTAGE_KEY)
@@ -50,6 +78,7 @@ async def get_currency_pair_info(from_curr: str, to_curr: str) -> CurrencyInfo |
         #     data["9. Percentage Price Change"][:-1])
 
         return CurrencyInfo(curr_from_name, curr_to_name, rate)
+
     except Exception as e:
         print("Error retrieving currency data:", str(e))
         return None
