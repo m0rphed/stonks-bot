@@ -18,7 +18,7 @@ class CurrencyInfo:
     per_day_price_delta_percentage: float | None = None
 
 
-@dataclass
+@dataclass(frozen=True)
 class InstrumentInfo:
     symbol: str
     name: str
@@ -27,7 +27,7 @@ class InstrumentInfo:
     market_open: str
     market_close: str
     timezone: str
-    currency_symbol: str
+    currency: str
 
 
 @dataclass
