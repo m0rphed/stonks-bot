@@ -16,3 +16,24 @@ class CurrencyInfo:
     currency_to: str
     rate: float
     per_day_price_delta_percentage: float | None = None
+
+
+@dataclass
+class InstrumentInfo:
+    symbol: str
+    name: str
+    instrument_type: str
+    region: str
+    market_open: str
+    market_close: str
+    timezone: str
+    currency_symbol: str
+
+
+@dataclass
+class CryptoInfo:
+    pass
+
+
+def get_crypto(symbol: str, market: str) -> CryptoInfo | None:
+    pass
