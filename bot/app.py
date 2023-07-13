@@ -1,14 +1,14 @@
 from pyrogram import filters, Client as PyrogramClient
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message, CallbackQuery
 from pyrogram.errors import UserNotParticipant
-from creds import load_dotenv, get_from_env
+from creds import load_env_file, get_from_env
 from supabase import create_client, Client as DbClient
 from stocks_alpha_vantage import get_stock_info
 
 BOT_NAME = "stonks-bot"
 
 # ensure needed environment variables are loaded
-load_dotenv("./secret/.env")
+load_env_file("./secret/.env")
 
 # set telegram client credentials
 app = PyrogramClient(
