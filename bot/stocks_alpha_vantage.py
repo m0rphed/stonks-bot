@@ -34,7 +34,7 @@ def get_stock_info(ticker: str) -> StockInfo | None:
         # Retrieve stock data
         data, meta_data = ts.get_quote_endpoint(symbol=ticker)
 
-        exchange = "NASDAQ"
+        exchange = "NASDAQ or NYSE" # TODO: find out which :D 
 
         # Extract relevant information from the response
         # TODO: find a way to extract real company name from the API

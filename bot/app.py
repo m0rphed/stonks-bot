@@ -1,26 +1,26 @@
 from pyrogram import filters, Client as PyrogramClient
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message, CallbackQuery
-from creds import load_env_file, get_from_env
+import creds
 from supabase import create_client, Client as DbClient
 from stocks_alpha_vantage import get_stock_info
 
 BOT_NAME = "stonks-bot"
 
 # ensure needed environment variables are loaded
-load_env_file("./secret/.env")
+creds.load_env_file("./secret/.env")
 
 # set telegram client credentials
 app = PyrogramClient(
     BOT_NAME,
-    api_id=get_from_env("TELEGRAM_API_API_ID"),
-    api_hash=get_from_env("TELEGRAM_API_API_HASH"),
-    bot_token=get_from_env("TELEGRAM_BOT_TOKEN")
+    api_id=creds.get_from_env("TELEGRAM_API_API_ID"),
+    api_hash=creds.get_from_env("TELEGRAM_API_API_HASH"),
+    bot_token=creds.get_from_env("TELEGRAM_BOT_TOKEN")
 )
 
 # set bot users DB (using: https://supabase.com/)
-supabase_url: str = get_from_env("SUPABASE_URL")
+supabase_url: str = creds.get_from_env("SUPABASE_URL")
 # TODO: use public supabase key if possible (now using service_role)
-supabase_key: str = get_from_env("SUPABASE_SEC_KEY")
+supabase_key: str = creds.get_from_env("SUPABASE_SEC_KEY")
 supabase: DbClient = create_client(supabase_url, supabase_key)
 
 
