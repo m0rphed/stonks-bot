@@ -20,7 +20,7 @@ app = PyrogramClient(
 
 # set bot users DB (using: https://supabase.com/)
 supabase_url: str = get_from_env("SUPABASE_URL")
-# TODO: use public supabase key if possible
+# TODO: use public supabase key if possible (now using service_role)
 supabase_key: str = get_from_env("SUPABASE_SEC_KEY")
 supabase: DbClient = create_client(supabase_url, supabase_key)
 
