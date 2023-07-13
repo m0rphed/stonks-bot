@@ -1,27 +1,27 @@
 from pyrogram import filters, Client as PyrogramClient
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message, CallbackQuery
 from pyrogram.errors import UserNotParticipant
-from creds import get_from_toml
+from creds import load_dotenv, get_from_env
 from supabase import create_client, Client as DbClient
 from stocks_alpha_vantage import get_stock_info
 
 BOT_NAME = "stonks-bot"
 
-# set telegram client credentials
-tg_keys = get_from_toml("telegram-api")
-bot_token = get_from_toml("telegram-bot")["token"]
+# ensure needed environment variables are loaded
+load_dotenv("./secret/.env")
 
+# set telegram client credentials
 app = PyrogramClient(
     BOT_NAME,
-    api_id=tg_keys["api_id"],
-    api_hash=tg_keys["api_hash"],
-    bot_token=bot_token
+    api_id=get_from_env("TELEGRAM_API_API_ID"),
+    api_hash=get_from_env("TELEGRAM_API_API_HASH"),
+    bot_token=get_from_env("TELEGRAM_BOT_TOKEN")
 )
 
 # set bot users DB (using: https://supabase.com/)
-sb_keys = get_from_toml("supabase")
-supabase_url: str = sb_keys["url"]
-supabase_key: str = sb_keys["key"]
+supabase_url: str = get_from_env("SUPABASE_URL")
+# TODO: use public supabase key if possible
+supabase_key: str = get_from_env("SUPABASE_SEC_KEY")
 supabase: DbClient = create_client(supabase_url, supabase_key)
 
 
