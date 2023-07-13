@@ -235,5 +235,8 @@ secret/
 # plotting and stock analysis data
 data/
 
-# ignore telegram session
+# ignore telegram session file
 *.session*
+
+# ignore temporary snippets
+_temp*.py
