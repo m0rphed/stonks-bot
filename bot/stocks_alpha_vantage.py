@@ -1,5 +1,6 @@
 import emoji
 import creds
+import datetime
 from alpha_vantage.async_support.timeseries import TimeSeries as TimeSeriesAsync
 from alpha_vantage.async_support.foreignexchange import ForeignExchange as ForeignExchangeAsync
 from fin_instruments_dto import InstrumentInfo, StockInfo, CurrencyPairInfo
@@ -37,13 +38,38 @@ def _region_emoji_or_empty(reg_str: str) -> str:
     return emoji.emojize(supported_regions[reg_str], language="alias")
 
 
+def _make_datetime(str_with_datetime: str) -> datetime.datetime:
+    # "%Y-%m-%d %H:%M:%S %z" # <-- TODO: should we handle timezone? or it's always UTC?
+    _format = "%Y-%m-%d %H:%M:%S"
+    return datetime.datetime.strptime(str_with_datetime, _format)
+
+
+def _to_curr_pair_dto(data: dict) -> CurrencyPairInfo:
+    curr_pair_dto = CurrencyPairInfo(
+        code_from=data["1. From_Currency Code"],    # "USD"
+        name_from=data["2. From_Currency Name"],    # "United States Dollar"
+
+        code_to=data["3. To_Currency Code"],        # "EUR"
+        name_to=data["4. To_Currency Name"],        # "Euro"
+        rate=float(data["5. Exchange Rate"]),       # "0.89050000"
+        last_datetime=_make_datetime(               # "2023-07-13 22:42:01" + " UTC"
+            data["6. Last Refreshed"]
+        ),
+        tz=data["7. Time Zone"],                    # "UTC"
+        price_bid=float(data["8. Bid Price"]),      # "0.89048000"
+        price_ask=float(data["9. Ask Price"])       # "0.89053000"
+    )
+
+    return curr_pair_dto
+
+
 def instrument_to_markdown(x: InstrumentInfo) -> str:
-    text = f"**{x.name}**" \
-        f"\n- --code--: `{x.symbol}`," \
-        f"\n- instrument type: __{x.instrument_type.lower()}__" \
-        f"\n- --currency--: `{x.currency}`" \
-        f"\n- timezone: {x.timezone}" \
-        f"\n- ⏰ from __{x.market_open}__ to __{x.market_close}__"
+    text = f"**{x.name}**\n" \
+        f"\n• --Code--: `{x.symbol}`," \
+        f"\n• Instrument type: __{x.instrument_type.lower()}__" \
+        f"\n• --Currency--: `{x.currency}`" \
+        f"\n• Timezone: {x.timezone}" \
+        f"\n• ⏰ from __{x.market_open}__ to __{x.market_close}__"
 
     reg_str = f"\n - region: {_region_emoji_or_empty(x.region)} {x.region}"
     return text + reg_str
@@ -95,16 +121,12 @@ async def get_curr_pair_info(from_curr: str, to_curr: str) -> CurrencyPairInfo |
             from_currency=from_curr, to_currency=to_curr)
         await fx.close()
 
-        # extract relevant information from the response
-        curr_from_name = data["2. From_Currency Name"]
-        curr_to_name = data["4. To_Currency Name"]
-        rate = float(data["5. Exchange Rate"])
-
         # TODO: find a way to retrieve daily change from API
         # per_day_price_delta_percentage = float(
         #     data["9. Percentage Price Change"][:-1])
 
-        return CurrencyInfo(curr_from_name, curr_to_name, rate)
+        # extract relevant information from the response
+        return _to_curr_pair_dto(data=data)
 
     except Exception as e:
         print("Error retrieving currency data:", str(e))
