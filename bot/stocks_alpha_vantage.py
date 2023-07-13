@@ -1,3 +1,4 @@
+import emoji
 import creds
 from alpha_vantage.async_support.timeseries import TimeSeries as TimeSeriesAsync
 from alpha_vantage.async_support.foreignexchange import ForeignExchange as ForeignExchangeAsync
@@ -9,7 +10,7 @@ ALPHA_VANTAGE_KEY = creds.get_from_env(
 
 
 def _search_res_to_dto(data: dict) -> InstrumentInfo:
-    inst = InstrumentInfo(
+    f_inst_dto = InstrumentInfo(
         symbol=data["1. symbol"],               # "MSF0.FRK"
         name=data["2. name"],                   # "MICROSOFT CORP. CDR"
         instrument_type=data["3. type"],        # "Equity"
@@ -17,9 +18,32 @@ def _search_res_to_dto(data: dict) -> InstrumentInfo:
         market_open=data["5. marketOpen"],      # "08:00"
         market_close=data["6. marketClose"],    # "20:00"
         timezone=data["7. timezone"],           # "UTC+02"
-        currency_symbol=data["8. currency"]     # "EUR"
+        currency=data["8. currency"]            # "EUR"
     )
-    return inst
+
+    return f_inst_dto
+
+
+def _region_emoji_or_empty(reg_str: str) -> str:
+    supported_regions = {"Frankfurt":           ":flag_germany:",
+                         "XETRA":               ":flag_germany:",
+                         "United States":       ":flag_united_states:",
+                         "United Kingdom":      ":flag_united_kingdom:",
+                         "Brazil/Sao Paolo":    ":flag_brazil:"}
+
+    return "" if reg_str not in supported_regions.keys() else emoji.emojize(supported_regions[reg_str])
+
+
+def instrument_to_markdown(x: InstrumentInfo) -> str:
+    text = f"""**{x.name}**
+        Code: `{x.symbol}`,
+        Instrument type: __{x.instrument_type.lower()}__
+        Currency: {x.currency}
+        TZ: {x.timezone}
+        __{x.market_open}__ - __{x.market_close}__"""
+
+    reg_str = f"\nRegion: {x.region} {_region_emoji_or_empty(x.region)}"
+    return text + reg_str
 
 
 async def search_for_instrument(query: str) -> list[InstrumentInfo] | None:
@@ -40,7 +64,7 @@ async def get_stock_info(ticker: str) -> StockInfo | None:
         # init alpha-vantage client for stock market data
         ts = TimeSeriesAsync(key=ALPHA_VANTAGE_KEY)
         # retrieve stock data by specified ticker symbol
-        data, _meta_data = await ts.get_quote_endpoint(symbol=ticker)
+        data, _ = await ts.get_quote_endpoint(symbol=ticker)
         await ts.close()
 
         exchange = "NASDAQ or NYSE"  # TODO: find out which :D
