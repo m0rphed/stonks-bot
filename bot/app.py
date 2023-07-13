@@ -3,7 +3,7 @@ from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message, 
 import creds
 from supabase import create_client, Client as DbClient
 from fin_instruments_dto import InstrumentInfo
-from stocks_alpha_vantage import get_stock_info, search_for_instrument, instrument_to_markdown
+from stocks_alpha_vantage import get_stock_info, get_search_results, instrument_to_markdown
 from pyrogram import enums as pyro_enums
 
 
@@ -96,7 +96,7 @@ async def track_stock(client: PyrogramClient, message: Message):
         return
 
     # retrieve available stocks, bond, currencies
-    xs: list[InstrumentInfo] | None = await search_for_instrument(query)
+    xs: list[InstrumentInfo] | None = await get_search_results(query)
 
     if xs is None or xs == []:
         await message.reply(

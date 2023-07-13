@@ -9,8 +9,8 @@ ALPHA_VANTAGE_KEY = creds.get_from_env(
     "ALPHA_VANTAGE_TOKEN", env_file_path="./secret/.env")
 
 
-def _search_res_to_dto(data: dict) -> InstrumentInfo:
-    f_inst_dto = InstrumentInfo(
+def _search_res_to_instrument_object(data: dict) -> InstrumentInfo:
+    inst_dto = InstrumentInfo(
         symbol=data["1. symbol"],               # "MSF0.FRK"
         name=data["2. name"],                   # "MICROSOFT CORP. CDR"
         instrument_type=data["3. type"],        # "Equity"
@@ -21,7 +21,7 @@ def _search_res_to_dto(data: dict) -> InstrumentInfo:
         currency=data["8. currency"]            # "EUR"
     )
 
-    return f_inst_dto
+    return inst_dto
 
 
 def _region_emoji_or_empty(reg_str: str) -> str:
@@ -49,13 +49,13 @@ def instrument_to_markdown(x: InstrumentInfo) -> str:
     return text + reg_str
 
 
-async def search_for_instrument(query: str) -> list[InstrumentInfo] | None:
+async def get_search_results(query: str) -> list[InstrumentInfo] | None:
     try:
         ts = TimeSeriesAsync(key=ALPHA_VANTAGE_KEY)
         # run search query and retrieve matching instruments
         search_res, _ = await ts.get_symbol_search(query)
         await ts.close()
-        return [_search_res_to_dto(sr) for sr in search_res]
+        return [_search_res_to_instrument_object(sr) for sr in search_res]
 
     except Exception as e:
         print("Error running search query:", str(e))

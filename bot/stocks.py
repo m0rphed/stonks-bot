@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 
 from datetime import datetime
 
-from stocks_alpha_vantage import search_for_instrument, get_curr_pair_info, get_stock_info
+from stocks_alpha_vantage import get_search_results, get_curr_pair_info, get_stock_info
 from alpha_vantage.async_support.timeseries import TimeSeries as TimeSeriesAsync
 
 ALPHA_VANTAGE_KEY = creds.get_from_env(
@@ -70,7 +70,7 @@ def run_test_retrieval():
 
 
 async def test_symbol_search(text: str):
-    instruments = await search_for_instrument(text)
+    instruments = await get_search_results(text)
     for i in instruments:
         print(i)
 
@@ -79,4 +79,5 @@ if __name__ == "__main__":
     # test_small_sync()
     # run_simple_test()
     # asyncio.run(test_data_retrieval())
-    asyncio.run(test_symbol_search("Microsoft"))
+    # asyncio.run(test_symbol_search("Microsoft"))
+    asyncio.run(get_curr_pair_info("USD", "EUR"))
