@@ -17,7 +17,7 @@ app = PyrogramClient(
     bot_token=creds.get_from_env("TELEGRAM_BOT_TOKEN")
 )
 
-# set bot users DB (using: https://supabase.com/)
+# set bot users DB (using: https://github.com/supabase-community/supabase-py)
 supabase_url: str = creds.get_from_env("SUPABASE_URL")
 # TODO: use public supabase key if possible (now using service_role)
 supabase_key: str = creds.get_from_env("SUPABASE_SEC_KEY")
@@ -25,7 +25,7 @@ supabase: DbClient = create_client(supabase_url, supabase_key)
 
 
 @app.on_message(filters.command("auth"))
-def authenticate_user(client: PyrogramClient, message: Message):
+async def authenticate_user(client: PyrogramClient, message: Message):
     """Handler for "/auth" command
     """
 
@@ -37,22 +37,22 @@ def authenticate_user(client: PyrogramClient, message: Message):
         "user_id", user_id).execute()
 
     if len(user.data) > 0:
-        message.reply("You are already authenticated.")
+        await message.reply("You are already authenticated.")
         return
 
     # save user's unique id to DB
     supabase.table("users").insert({"user_id": user_id}).execute()
-    message.reply("Authentication successful.")
+    await message.reply("Authentication successful.")
 
 
 @app.on_message(filters.command("track"))
-def track_stock(client: PyrogramClient, message: Message):
+async def track_stock(client: PyrogramClient, message: Message):
     """Handler for "/track <stock_ticker> <price_to_be_reached>" command
     """
 
     args = message.text.split(" ")[1:]
     if len(args) != 2:
-        message.reply("Please provide a stock ticker and price to be reached.")
+        await message.reply("Please provide a stock ticker and price to be reached.")
         return
 
     stock_ticker, price_to_be_reached = args
@@ -61,7 +61,7 @@ def track_stock(client: PyrogramClient, message: Message):
     stock_info = get_stock_info(stock_ticker)
 
     if stock_info is None:
-        message.reply(
+        await message.reply(
             "Failed to retrieve stock data. Try searching stocks with command '/search <ticker>'.")
         return
 
@@ -79,11 +79,11 @@ def track_stock(client: PyrogramClient, message: Message):
             "Confirm Tracking", callback_data=f"confirm_track_{stock_ticker}-{price_to_be_reached}")]]
     )
 
-    message.reply_text(reply_message, reply_markup=keyboard)
+    await message.reply_text(reply_message, reply_markup=keyboard)
 
 
 @app.on_callback_query()
-def handle_button_click(client: PyrogramClient, callback_query: CallbackQuery):
+async def handle_button_click(client: PyrogramClient, callback_query: CallbackQuery):
     """Handler for button callbacks
     """
 
@@ -97,7 +97,7 @@ def handle_button_click(client: PyrogramClient, callback_query: CallbackQuery):
         stock_info = get_stock_info(stock_ticker)
 
         if stock_info is None:
-            callback_query.answer("Failed to retrieve stock data.")
+            await callback_query.answer("Failed to retrieve stock data.")
             return
 
         # save tracking details to Supabase linked to user's telegram account
@@ -107,11 +107,11 @@ def handle_button_click(client: PyrogramClient, callback_query: CallbackQuery):
             "on_price_value": on_price_value
         }).execute()
 
-        callback_query.answer("Stock tracking started successfully.")
+        await callback_query.answer("Stock tracking started successfully.")
 
 
 # run the bot
 if __name__ == "__main__":
+    import asyncio
     print("Starting bot...")
-    app.run()
-    print("STONKS!")
+    asyncio.run(app.run())
