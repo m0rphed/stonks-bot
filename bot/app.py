@@ -1,6 +1,5 @@
 from pyrogram import filters, Client as PyrogramClient
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message, CallbackQuery
-from pyrogram.errors import UserNotParticipant
 from creds import load_env_file, get_from_env
 from supabase import create_client, Client as DbClient
 from stocks_alpha_vantage import get_stock_info
