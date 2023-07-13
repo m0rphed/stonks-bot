@@ -2,7 +2,10 @@ from pyrogram import filters, Client as PyrogramClient
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message, CallbackQuery
 import creds
 from supabase import create_client, Client as DbClient
-from stocks_alpha_vantage import get_stock_info
+from fin_instruments_dto import InstrumentInfo
+from stocks_alpha_vantage import get_stock_info, search_for_instrument, instrument_to_markdown
+from pyrogram import enums as pyro_enums
+
 
 BOT_NAME = "stonks-bot"
 
@@ -82,6 +85,28 @@ async def track_stock(client: PyrogramClient, message: Message):
     await message.reply_text(reply_message, reply_markup=keyboard)
 
 
+@app.on_message(filters.command("search"))
+async def track_stock(client: PyrogramClient, message: Message):
+    """Handler for "/track <stock_ticker> <price_to_be_reached>" command
+    """
+
+    query = message.text.replace("/search", "").strip()
+    if query is None or query == "" or query == " ":
+        await message.reply("Please provide a stock ticker or a message to search through available instruments")
+        return
+
+    # retrieve available stocks, bond, currencies
+    xs: list[InstrumentInfo] | None = await search_for_instrument(query)
+
+    if xs is None or xs == []:
+        await message.reply(
+            "Failed to retrieve instrument data. Try searching with different keywords.")
+        return
+
+    for inst in xs:
+        await message.reply(instrument_to_markdown(inst), parse_mode=pyro_enums.ParseMode.MARKDOWN)
+
+
 @app.on_callback_query()
 async def handle_button_click(client: PyrogramClient, callback_query: CallbackQuery):
     """Handler for button callbacks
@@ -115,3 +140,4 @@ if __name__ == "__main__":
     import asyncio
     print("Starting bot...")
     asyncio.run(app.run())
+    print("Exiting bot...")

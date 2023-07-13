@@ -25,24 +25,27 @@ def _search_res_to_dto(data: dict) -> InstrumentInfo:
 
 
 def _region_emoji_or_empty(reg_str: str) -> str:
-    supported_regions = {"Frankfurt":           ":flag_germany:",
-                         "XETRA":               ":flag_germany:",
-                         "United States":       ":flag_united_states:",
-                         "United Kingdom":      ":flag_united_kingdom:",
-                         "Brazil/Sao Paolo":    ":flag_brazil:"}
+    supported_regions = {"Frankfurt":           ":flag_for_Germany:",
+                         "XETRA":               ":flag_for_Germany:",
+                         "United States":       ":flag_for_United_States:",
+                         "United Kingdom":      ":flag_for_United_Kingdom:",
+                         "Brazil/Sao Paolo":    ":flag_for_Brazil:"}
 
-    return "" if reg_str not in supported_regions.keys() else emoji.emojize(supported_regions[reg_str])
+    if reg_str not in supported_regions.keys():
+        return ""
+
+    return emoji.emojize(supported_regions[reg_str], language="alias")
 
 
 def instrument_to_markdown(x: InstrumentInfo) -> str:
-    text = f"""**{x.name}**
-        Code: `{x.symbol}`,
-        Instrument type: __{x.instrument_type.lower()}__
-        Currency: {x.currency}
-        TZ: {x.timezone}
-        __{x.market_open}__ - __{x.market_close}__"""
+    text = f"**{x.name}**" \
+        f"\n- --code--: `{x.symbol}`," \
+        f"\n- instrument type: __{x.instrument_type.lower()}__" \
+        f"\n- --currency--: `{x.currency}`" \
+        f"\n- timezone: {x.timezone}" \
+        f"\n- ⏰ from __{x.market_open}__ to __{x.market_close}__"
 
-    reg_str = f"\nRegion: {x.region} {_region_emoji_or_empty(x.region)}"
+    reg_str = f"\n - region: {_region_emoji_or_empty(x.region)} {x.region}"
     return text + reg_str
 
 
