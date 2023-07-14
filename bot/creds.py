@@ -1,6 +1,6 @@
 import os
 import toml
-from dotenv import load_dotenv
+import dotenv
 
 
 def get_from_toml(key: str, toml_path: str = "./secret/keys.toml") -> str | None:
@@ -25,13 +25,13 @@ def load_env_file(env_file_path: str) -> None:
     if not os.path.exists(env_file_path):
         raise FileNotFoundError(f"`.env` file '{env_file_path}' not found.")
 
-    load_dotenv(dotenv_path=env_file_path)
+    dotenv.load_dotenv(dotenv_path=env_file_path)
 
 
 def get_from_env(key: str, env_file_path: str | None = None) -> str | None:
     if env_file_path is not None:
         # take environment variables from .env file
-        load_dotenv(dotenv_path=env_file_path)
+        dotenv.load_dotenv(dotenv_path=env_file_path)
 
     env_value = os.environ.get(key)
     if env_value is not None:
