@@ -52,7 +52,7 @@ def _to_curr_pair_dto(data: dict) -> CurrencyPairInfo:
         code_to=data["3. To_Currency Code"],        # "EUR"
         name_to=data["4. To_Currency Name"],        # "Euro"
         rate=float(data["5. Exchange Rate"]),       # "0.89050000"
-        last_datetime=_make_datetime(               # "2023-07-13 22:42:01" + " UTC"
+        last_datetime=_make_datetime(               # "2023-07-13 22:42:01"
             data["6. Last Refreshed"]
         ),
         tz=data["7. Time Zone"],                    # "UTC"
