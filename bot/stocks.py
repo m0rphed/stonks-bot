@@ -80,4 +80,4 @@ if __name__ == "__main__":
     # run_simple_test()
     # asyncio.run(test_data_retrieval())
     # asyncio.run(test_symbol_search("Microsoft"))
-    asyncio.run(get_curr_pair_info("USD", "EUR"))
+    asyncio.run(get_curr_pair_info("ETH", "RUB"))

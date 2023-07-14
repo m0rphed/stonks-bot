@@ -126,7 +126,8 @@ async def get_curr_pair_info(from_curr: str, to_curr: str) -> CurrencyPairInfo |
         #     data["9. Percentage Price Change"][:-1])
 
         # extract relevant information from the response
-        return _to_curr_pair_dto(data=data)
+        curr_pair = _to_curr_pair_dto(data)
+        return curr_pair
 
     except Exception as e:
         print("Error retrieving currency data:", str(e))
