@@ -1,5 +1,5 @@
 from supabase import Client as SupabaseClient
-from fin_instruments_dto import CurrencyPairInfo, StockInfo
+from api_models import StockInfo
 from db_funcs import with_supabase
 
 

@@ -3,11 +3,10 @@ from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message, 
 from pyrogram import enums as pyro_enums
 
 import creds
-from db_funcs import supabase_client_init, SupabaseClient
 
-from fin_instruments_dto import CurrencyPairInfo, InstrumentInfo
+from api_models import CurrencyPairInfo, InstrumentSearchInfo
 from stocks_alpha_vantage import get_curr_pair_info, get_stock_info, get_search_results, instrument_to_markdown
-
+from db_funcs import get_supabase_client
 
 BOT_NAME = "stonks-bot"
 
@@ -22,8 +21,7 @@ app = PyrogramClient(
     bot_token=creds.get_from_env("TELEGRAM_BOT_TOKEN")
 )
 
-# set bot users DB (using: https://github.com/supabase-community/supabase-py)
-supabase: SupabaseClient = supabase_client_init()
+supabase = get_supabase_client()
 
 
 @app.on_message(filters.command("auth"))
@@ -152,7 +150,7 @@ async def search_stock(client: PyrogramClient, message: Message):
         return
 
     # retrieve available stocks, bond, currencies
-    xs: list[InstrumentInfo] | None = await get_search_results(query)
+    xs: list[InstrumentSearchInfo] | None = await get_search_results(query)
 
     if xs is None or xs == []:
         await message.reply(
@@ -175,7 +173,7 @@ async def handle_button_click(client: PyrogramClient, callback_query: CallbackQu
         curr_codes: list = data.replace(
             "tracking_currency_confirmed>", "").split("-")
         curr_info: CurrencyPairInfo | None = await get_curr_pair_info(curr_codes[0], curr_codes[1])
-        
+
         # TODO: remove unnecessary api request before adding to db in callback
         if curr_info is None:
             await callback_query.answer("⛔ Failed to retrieve stock data.")
@@ -184,26 +182,26 @@ async def handle_button_click(client: PyrogramClient, callback_query: CallbackQu
         try:
             # TODO: check if currency pair is in INSTRUMENTS
             db_curr_pair = supabase.table("instruments").select("*"
-                ).eq("is_curr_pair", True
-                ).eq("data_provider", "alpha_vantage"
-                ).eq("code_curr", f"{curr_info.code_from}-{curr_info.code_to}"
-                ).execute() 
-            
+                                                                ).eq("is_curr_pair", True
+                                                                     ).eq("data_provider", "alpha_vantage"
+                                                                          ).eq("code_curr", f"{curr_info.code_from}-{curr_info.code_to}"
+                                                                               ).execute()
+
             if len(db_curr_pair.data) == 1:
                 row = db_curr_pair.data[0]
                 raise NotImplementedError(
-                    "That means that this currency pair is tracked by at least 1 user" \
-                    "-> We need to get its `table('instruments').id`" \
+                    "That means that this currency pair is tracked by at least 1 user"
+                    "-> We need to get its `table('instruments').id`"
                     "-> We need to get our `table('bot_users').id` which == table('bot_users').select('*').eq('tg_user_id', user_id)"
                     "-> We need to define how frequent we want to receive messages = 'daily', 'on_change', ...")
 
-            
             if len(db_curr_pair.data) == 0:
-                raise NotImplementedError("No such currency pair tracked by anyone -> you need to upd INSTRUMENTS")
-            
+                raise NotImplementedError(
+                    "No such currency pair tracked by anyone -> you need to upd INSTRUMENTS")
+
             if len(db_curr_pair.data) > 1:
                 raise NotImplementedError("Impossible case, table corrupted")
-            
+
             # save tracking details to Supabase linked to user's telegram account
             supabase.table("tracking").insert({
                 "user_id": user_id,
@@ -214,7 +212,7 @@ async def handle_button_click(client: PyrogramClient, callback_query: CallbackQu
         except Exception as e:  # TODO: handle try adding already tracking stock
             await callback_query.answer(f"⛔ Tracking failed: {e}")
             return
-        
+
     if data.startswith("tracking_confirmed_"):
         prefix, on_price_value = data.split("-")
         stock_ticker = prefix.replace("tracking_confirmed_", "")

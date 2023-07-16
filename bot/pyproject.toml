@@ -16,6 +16,7 @@ dependencies = [
     "wallstreet>=0.3.2",
     "python-dotenv>=1.0.0",
     "emoji>=2.6.0",
+    "pydantic>=1.10.11",
 ]
 requires-python = ">=3.11"
 license = {text = "MIT"}
@@ -27,4 +28,7 @@ plotting = [
 ]
 tools = [
     "mypy>=1.4.1",
+]
+dev = [
+    "notebook>=6.5.4",
 ]
