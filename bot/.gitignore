@@ -239,4 +239,4 @@ data/
 *.session*
 
 # ignore temporary snippets
-_temp*.py
+_temp_*.py
