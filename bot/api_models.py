@@ -47,3 +47,5 @@ class CryptoInfo:
 
 def get_crypto(symbol: str, market: str) -> CryptoInfo | None:
     pass
+
+
