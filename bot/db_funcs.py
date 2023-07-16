@@ -6,6 +6,15 @@ import creds
 SupportedDB = SupabaseClient
 
 
+def get_supabase_client() -> SupabaseClient:
+    # TODO: find a way to inject config & then do: `if config.load_env_flag: ...`
+    creds.load_env_file("./secret/.env")
+    sb_url = creds.get_from_env("SUPABASE_URL")
+    # TODO: find a way to inject config & then do: `if config.use_supabase_public: ...`
+    sb_key = creds.get_from_env("SUPABASE_SEC_KEY")
+    return create_client(sb_url, sb_key)
+
+
 def with_supabase():
     # TODO: find a way to inject config & then do: `if config.load_env_flag: ...`
     creds.load_env_file("./secret/.env")
