@@ -4,7 +4,7 @@ from pyrogram import enums as pyro_enums
 
 import creds
 
-from api_models import CurrencyPairInfo, InstrumentSearchInfo
+from models import CurrencyPairInfo, InstrumentSearchInfo
 from stocks_alpha_vantage import get_curr_pair_info, get_stock_info, get_search_results, instrument_to_markdown
 from db_funcs import get_supabase_client
 

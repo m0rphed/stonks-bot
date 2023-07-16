@@ -3,7 +3,7 @@ import creds
 
 from alpha_vantage.async_support.timeseries import TimeSeries as TimeSeriesAsync
 from alpha_vantage.async_support.foreignexchange import ForeignExchange as ForeignExchangeAsync
-from api_models import InstrumentSearchInfo, StockInfo, CurrencyPairInfo
+from models import InstrumentSearchInfo, StockInfo, CurrencyPairInfo
 
 # Alpha Vantage API key
 ALPHA_VANTAGE_KEY = creds.get_from_env(

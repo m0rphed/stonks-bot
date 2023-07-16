@@ -1,4 +1,5 @@
 import datetime as dt
+from uuid import UUID
 from typing import Optional
 from pydantic import BaseModel, Field
 
@@ -50,3 +51,38 @@ class CryptoPairInfo(BaseModel):        # fields are similar to CurrencyPairInfo
     timezone: str                       = Field(alias="7. Time Zone")
     price_bid: float                    = Field(alias="8. Bid Price")
     price_ask: float                    = Field(alias="9. Ask Price")
+
+
+# models for db entities 
+class BotUserEntity(BaseModel):
+    id: UUID
+    created_at: dt.datetime
+    tg_user_id: int
+    email: Optional[str]
+    password: Optional[str]
+    tinkoff_token: Optional[str]
+    tinkoff_sandbox: Optional[str]
+    settings: Optional[dict]
+
+
+class InstrumentEntity(BaseModel):
+    id: UUID
+    updated_at: dt.datetime
+    code_figi: Optional[str]
+    code_exchange: Optional[str]
+    ticker: Optional[str]
+    price: Optional[float]
+    exchange_rate: Optional[float]
+    code_curr: Optional[str]
+    is_curr_pair: bool
+    is_crypto_pair: bool
+    data_provider: str
+
+
+class TrackingEntity(BaseModel):
+    id: UUID
+    tracked_instrument: UUID
+    tracked_by_user: UUID
+    on_rate: Optional[float]
+    on_price: Optional[float]
+    notify: str
