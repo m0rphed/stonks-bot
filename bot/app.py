@@ -3,7 +3,7 @@ from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message, 
 from pyrogram import enums as pyro_enums
 
 import creds
-from database_funcs import supabase_client_init, SupabaseClient
+from db_funcs import supabase_client_init, SupabaseClient
 
 from fin_instruments_dto import CurrencyPairInfo, InstrumentInfo
 from stocks_alpha_vantage import get_curr_pair_info, get_stock_info, get_search_results, instrument_to_markdown

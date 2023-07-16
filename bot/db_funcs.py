@@ -46,3 +46,6 @@ def with_supabase_config(supabase_url: str, supabase_key: str):
         return wrapper
 
     return decorator
+
+# TODO: consider adding functions that do not relay on specific database
+# but can do operations with whatever database provider (that specified by parameter passed to function)
