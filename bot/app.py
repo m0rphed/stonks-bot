@@ -127,7 +127,7 @@ async def track_stock(client: PyrogramClient, message: Message):
 
     # check if stock ticker is tracked by anyone
     # (which means that its ticker exist in the "instruments" table)
-    stock_db_obj: InstrumentEntity | None = await check_instrument_by_ticker(ticker, "alpha_vantage")
+    stock_db_obj: InstrumentEntity | None = check_instrument_by_ticker(ticker, "alpha_vantage")
     if stock_db_obj is not None:
         tracking = {
             "tracked_instrument": stock_db_obj.id,
