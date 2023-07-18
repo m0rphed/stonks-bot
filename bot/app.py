@@ -3,10 +3,12 @@ from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message, 
 from pyrogram import enums
 
 import creds
-import json
+import secrets
+from formatting import msg_ok, msg_warning, msg_error
 
 from models import BotUserEntity, CurrencyPairInfo, InstrumentEntity, InstrumentSearchInfo, StockInfo
 from api_alpha_vantage import get_curr_pair_info, get_stock_info, get_search_results, instrument_to_markdown
+
 from db_funcs import get_supabase_client
 from supabase_funcs import add_instrument, add_user_by_id, check_instrument_by_ticker, check_user, add_tracking
 
@@ -26,16 +28,12 @@ app = PyrogramClient(
 supabase = get_supabase_client()
 
 
-def msg_warning(msg: str):
-    return "⚠️ " + msg
+def get_random_key(key_length: int = 10) -> str:
+    key = secrets.token_hex(key_length)[:key_length]
+    return key
 
 
-def msg_error(msg: str):
-    return "⛔ " + msg
-
-
-def msg_ok(msg: str):
-    return "✅ " + msg
+callback_data_dict: dict = {}
 
 
 async def authenticated_users_only(tg_user_id: int, chat_id: int) -> BotUserEntity | None:
@@ -127,11 +125,12 @@ async def track_stock(client: PyrogramClient, message: Message):
 
     # check if stock ticker is tracked by anyone
     # (which means that its ticker exist in the "instruments" table)
-    stock_db_obj: InstrumentEntity | None = check_instrument_by_ticker(ticker, "alpha_vantage")
+    stock_db_obj: InstrumentEntity | None = check_instrument_by_ticker(
+        ticker, "alpha_vantage")
     if stock_db_obj is not None:
         tracking = {
-            "tracked_instrument": stock_db_obj.id,
-            "tracked_by_user": user_db_obj.id,
+            "tracked_instrument": str(stock_db_obj.id),
+            "tracked_by_user": str(user_db_obj.id),
             "notify": "on_change",
             "on_price": float(price_to_be_reached)
         }
@@ -141,7 +140,7 @@ async def track_stock(client: PyrogramClient, message: Message):
                         f"Ticket: {stock_db_obj.ticker}\n" \
                         f"Price: {stock_db_obj.price}\n" \
                         f"Exchange: {stock_db_obj.code_exchange}\n" \
-                        f"👉 provided by: `alpha_vantage`\n" \
+                        f"• provided by 👉 `alpha_vantage`\n" \
                         f"\nIf this is the correct stock you want to track, click the button below to confirm."
 
     # if not found in "instruments" -> try retrieve from API
@@ -169,7 +168,8 @@ async def track_stock(client: PyrogramClient, message: Message):
         tracking = {
             # link to the new instrument we've just inserted
             "tracked_instrument": "",
-            "tracked_by_user": user_db_obj.id,
+            # TODO: find a better way to encode UUID instance in models
+            "tracked_by_user": str(user_db_obj.id),
             "notify": "on_change",
             "on_price": float(price_to_be_reached)
         }
@@ -181,21 +181,28 @@ async def track_stock(client: PyrogramClient, message: Message):
                         f"Exchange: {stock_api.exchange}\n" \
                         f"Change: {stock_api.change}\n" \
                         f"Percentage change: {stock_api.change_percent}\n" \
-                        f"👉 provided by: `alpha_vantage`\n" \
+                        f"• provided by 👉 `alpha_vantage`\n" \
                         f"\nIf this is the correct stock you want to track, click the button below to confirm."
 
-    # prepare data to pass to the callback
-    data = {
-        "new_instrument": "" if new_stock is None else new_stock,
+    # prepare data to pass to the callback query via placing it into a dict by generated key
+    instrument = "" if new_stock is None else new_stock
+    key: str = get_random_key()
+    callback_data_dict[key] = {
+        "new_instrument": instrument,
         "tracking": tracking
     }
 
     keyboard = InlineKeyboardMarkup(
-        [[InlineKeyboardButton(
-            "Confirm", callback_data=f"tracking_stock_confirmed>{ticker}-{price_to_be_reached}>{json.dumps(data)}"
-        )], [InlineKeyboardButton(
-            "❌ Cancel", callback_data=f"tracking_stocked_canceled"
-        )]]
+        [
+            [
+                InlineKeyboardButton(
+                    "Confirm", callback_data=f"tracking_stock_confirmed>{ticker}-{price_to_be_reached}>{key}"
+                ),
+                InlineKeyboardButton(
+                    "Cancel", callback_data=f"tracking_stock_canceled>{key}"
+                )
+            ]
+        ]
     )
 
     await message.reply_text(
@@ -273,7 +280,7 @@ async def search_stock(client: PyrogramClient, message: Message):
         await message.reply(instrument_to_markdown(inst), parse_mode=enums.ParseMode.MARKDOWN)
 
 
-@app.on_callback_query
+@app.on_callback_query()
 async def handle_button_click(client: PyrogramClient, callback_query: CallbackQuery):
     """Handler for button callbacks
     """
@@ -282,10 +289,19 @@ async def handle_button_click(client: PyrogramClient, callback_query: CallbackQu
     if data.startswith("tracking_currency_confirmed>"):
         raise NotImplementedError("not yet done :D")
 
+    if data.startswith("tracking_stock_canceled>"):
+        _, key = data.split(">")
+        _ = callback_data_dict.pop(key)
+        await callback_query.message.reply(msg_warning("Tracking of canceled by user."))
+        await callback_query.message.delete(True)
+        await callback_query.answer()
+
+        return
+
     if data.startswith("tracking_stock_confirmed>"):
-        _, ticker_and_price, data_json = data.split(">")
+        _, ticker_and_price, cb_dict_key = data.split(">")
         ticker, price = ticker_and_price.split("-")
-        data_obj = json.loads(data_json)
+        data_obj = callback_data_dict[cb_dict_key]
 
         new_instrument = data_obj["new_instrument"]
         tracking = data_obj["tracking"]
@@ -298,15 +314,16 @@ async def handle_button_click(client: PyrogramClient, callback_query: CallbackQu
             instrument_db_obj = add_instrument(new_instrument)
             if instrument_db_obj is None:
                 await callback_query.answer(msg_error("Failed to add new tracking"))
-                raise RuntimeError(
-                    f"Failed to insert new instrument {new_instrument}")
+                # TODO: log: RuntimeError(f"Failed to insert new instrument {new_instrument}")
+                return
 
             tracking["tracked_instrument"] = instrument_db_obj["id"]
             tracking_db_obj = add_tracking(tracking)
 
             if tracking_db_obj in None:
                 await callback_query.answer(msg_error("Failed to add new tracking"))
-                raise RuntimeError(f"Failed to insert new tracking {tracking}")
+                # TODO: log: RuntimeError(f"Failed to insert new tracking {tracking}")
+                return
 
             await callback_query.answer(msg_ok(f"Added {ticker} notify on price: {price}"))
             return
@@ -317,8 +334,11 @@ async def handle_button_click(client: PyrogramClient, callback_query: CallbackQu
         tracking_obj = add_tracking(tracking)
         if tracking_obj in None:
             await callback_query.answer(msg_error("Failed to add new tracking"))
-            raise RuntimeError(f"Failed to insert new tracking {tracking}")
+            # TODO: log RuntimeError(f"Failed to insert new tracking {tracking}")
+            return
 
+        # await callback_query.message.reply(msg_warning("Tracking of canceled by user."))
+        # await callback_query.message.delete(True)
         await callback_query.answer(msg_ok(f"Added {ticker} notify on price: {price}"))
 
 
