@@ -88,7 +88,7 @@ async def show_portfolio(client: PyrogramClient, message: Message):
 async def track_stock(client: PyrogramClient, message: Message):
     """adds new tracking of a stock: "/track_stock <stock_ticker> <price>"
     """
-    user_db_obj: BotUserEntity | None = authenticated_users_only(
+    user_db_obj: BotUserEntity | None = await authenticated_users_only(
         tg_user_id=message.from_user.id,
         chat_id=message.chat.id
     )
