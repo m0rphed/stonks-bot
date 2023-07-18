@@ -36,7 +36,7 @@ def check_curr_pair(supabase: SupabaseClient, code_from: str, code_to: str, data
             f"DB have multiple currency pair with the same `code_curr`:"
             f" {code_from}_{code_to} -> data must be corrupted")
 
-    raise None
+    return None
 
 
 @with_supabase
@@ -55,7 +55,7 @@ def check_crypto_pair(supabase: SupabaseClient, code_from: str, code_to: str, da
             f"DB have multiple crypto currency pair with the same `code_curr`:"
             f" {code_from}_{code_to} -> data must be corrupted")
 
-    raise None
+    return None
 
 
 @with_supabase
@@ -76,7 +76,7 @@ def check_instrument_by_figi(supabase: SupabaseClient, code_figi: str, data_prov
             f" {code_figi} (`data_provider`: {data_provider})"
             "-> data must be corrupted")
 
-    raise None
+    return None
 
 
 @with_supabase
@@ -97,7 +97,7 @@ def check_instrument_by_ticker(supabase: SupabaseClient, ticker: str, data_provi
             f" {ticker} (`data_provider`: {data_provider})"
             "-> data must be corrupted")
 
-    raise None
+    return None
 
 
 @with_supabase
