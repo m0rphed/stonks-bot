@@ -1,16 +1,44 @@
-from pyrogram import filters, Client as PyrogramClient
-from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message, CallbackQuery
-from pyrogram import enums
-from bot_callback_funcs import finish_callback_query, tracking_cancellation
-from bot_helpers import get_random_key, authenticated_users_only
-
 import creds
-from formatting import curr_pair_api_confirmation, curr_pair_entity_confirmation, msg_ok, msg_warning, msg_error, stock_api_confirmation, stock_entity_confirmation
-
-from models import BotUserEntity, CurrencyPairInfo, InstrumentEntity, InstrumentSearchInfo, StockInfo
-from api_alpha_vantage import get_curr_pair_info, get_stock_info, get_search_results, instrument_to_markdown
-
-from supabase_funcs import add_instrument, add_user_by_id, check_instrument_by_ticker, check_user, check_curr_pair, add_tracking
+from pyrogram import Client as PyrogramClient
+from pyrogram import enums, filters
+from pyrogram.types import (
+    CallbackQuery,
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
+    Message
+)
+from api_alpha_vantage import (
+    get_curr_pair_info,
+    get_search_results,
+    get_stock_info,
+    instrument_to_markdown
+)
+from bot_callback_funcs import finish_callback_query, tracking_cancellation
+from bot_helpers import authenticated_users_only, get_random_key
+from formatting import (
+    curr_pair_api_confirmation,
+    curr_pair_entity_confirmation,
+    msg_error,
+    msg_warning,
+    msg_ok,
+    stock_api_confirmation,
+    stock_entity_confirmation
+)
+from models import (
+    BotUserEntity,
+    CurrencyPairInfo,
+    InstrumentEntity,
+    InstrumentSearchInfo,
+    StockInfo
+)
+from supabase_funcs import (
+    add_instrument,
+    add_tracking,
+    add_user_by_id,
+    check_curr_pair,
+    check_instrument_by_ticker,
+    check_user
+)
 
 BOT_NAME = "stonks-bot"
 # TODO: impl. enums for data providers for supported APIs

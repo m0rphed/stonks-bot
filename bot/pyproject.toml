@@ -32,4 +32,5 @@ tools = [
 ]
 dev = [
     "notebook>=6.5.4",
+    "isort>=5.12.0",
 ]
