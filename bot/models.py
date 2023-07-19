@@ -25,6 +25,8 @@ class CurrencyPairInfo(BaseModel):      # ForEx pair fields:
     timezone: str                       = Field(alias="7. Time Zone")
     price_bid: float                    = Field(alias="8. Bid Price")
     price_ask: float                    = Field(alias="9. Ask Price")
+    exchange: Optional[str]             # TODO: define alias for this field
+    data_provider: Optional[str]        # TODO: define alias for this field
 
 
 class StockInfo(BaseModel):             # Stock fields:
@@ -38,7 +40,8 @@ class StockInfo(BaseModel):             # Stock fields:
     prev_close: float                   = Field(alias="08. previous close")
     change: float                       = Field(alias="09. change")
     change_percent: str                 = Field(alias="10. change percent")
-    exchange: Optional[str]             # TODO: define aliases for this field
+    exchange: Optional[str]             # TODO: define alias for this field
+    data_provider: Optional[str]        # TODO: define alias for this field
 
 
 class CryptoPairInfo(BaseModel):        # fields are similar to CurrencyPairInfo
@@ -51,6 +54,8 @@ class CryptoPairInfo(BaseModel):        # fields are similar to CurrencyPairInfo
     timezone: str                       = Field(alias="7. Time Zone")
     price_bid: float                    = Field(alias="8. Bid Price")
     price_ask: float                    = Field(alias="9. Ask Price")
+    exchange: Optional[str]             # TODO: define alias for this field
+    data_provider: Optional[str]        # TODO: define alias for this field
 
 
 # models for db entities 
