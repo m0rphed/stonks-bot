@@ -73,9 +73,7 @@ async def auth_user(client: PyrogramClient, message: Message):
         await message.reply(msg_warning("You are already authenticated."))
         return
 
-    user_added = add_user_by_id(user_id)
-
-    if user_added is not None:
+    if add_user_by_id(user_id) is not None:
         await message.reply(msg_ok("Authentication successful!"))
         return
 
@@ -98,7 +96,6 @@ async def track_stock(client: PyrogramClient, message: Message):
     """adds new tracking of a stock: "/track_stock <stock_ticker> <price>"
     """
     user_entity: BotUserEntity | None = await authenticated_users_only(message)
-
     if user_entity is None:
         return
 

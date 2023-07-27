@@ -58,7 +58,7 @@ class CryptoPairInfo(BaseModel):        # fields are similar to CurrencyPairInfo
     data_provider: Optional[str]        # TODO: define alias for this field
 
 
-# models for db entities 
+# models for db entities
 class BotUserEntity(BaseModel):
     id: UUID
     created_at: dt.datetime
@@ -76,8 +76,8 @@ class InstrumentEntity(BaseModel):
     code_figi: Optional[str]
     code_exchange: Optional[str]
     ticker: Optional[str]
-    price: Optional[float]
-    exchange_rate: Optional[float]
+    price: Optional[float] = None
+    exchange_rate: Optional[float] = None
     code_curr: Optional[str]
     is_curr_pair: bool
     is_crypto_pair: bool
@@ -91,3 +91,13 @@ class TrackingEntity(BaseModel):
     on_rate: Optional[float]
     on_price: Optional[float]
     notify: str
+
+
+def create_tracking_obj(instrument: InstrumentEntity, by_user: BotUserEntity, notify: str = "on_change") -> TrackingEntity:
+    tracking = {}
+    tracking["tracked_instrument"]  = instrument.id
+    tracking["tracked_by_user"]     = by_user.id
+    tracking["on_rate"]             = None if instrument.exchange_rate is None else instrument.exchange_rate
+    tracking["on_price"]            = None if instrument.price is None else instrument.price
+    tracking["notify"]              = notify
+    return TrackingEntity.parse_obj(tracking)
