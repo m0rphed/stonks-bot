@@ -18,6 +18,7 @@ dependencies = [
     "emoji>=2.6.0",
     "pydantic>=1.10.11",
     "realtime==1.0.0",
+    "loguru>=0.7.0",
 ]
 requires-python = ">=3.11"
 license = {text = "MIT"}
