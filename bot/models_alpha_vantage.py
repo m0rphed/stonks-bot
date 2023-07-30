@@ -3,7 +3,7 @@ from typing import Optional
 
 from pydantic import Field, validator
 
-from data_models import StockMarketInstrument, SearchQueryRes, ExchangePair
+from models import StockMarketInstrument, SearchQueryRes, ExchangePair
 
 
 # noinspection DuplicatedCode
@@ -30,6 +30,12 @@ class SearchQueryResAV(SearchQueryRes):
     timezone: str                       = Field(alias="7. timezone")
     currency: Optional[str]             = Field(alias="8. currency")
 
+    def to_markdown(self) -> str:
+        md_str_end = \
+            f"\n• ⏰ Open from __{self.market_open}__ to __{self.market_close}__" \
+            f"\n• Timezone: {self.timezone}"
+        return super().to_markdown() + md_str_end
+
 
 class ExchangePairAV(ExchangePair):
     code_from: str                      = Field(alias="1. From_Currency Code")
@@ -43,13 +49,13 @@ class ExchangePairAV(ExchangePair):
     price_ask: Optional[float | None]   = Field(alias="9. Ask Price")
 
     @validator('price_bid', pre=True)
-    def validate_price_bid(self, value):
+    def validate_price_bid(cls, value):
         if value == "-":
             return None
         return value
 
     @validator('price_ask', pre=True)
-    def validate_price_ask(self, value):
+    def validate_price_ask(cls, value):
         if value == "-":
             return None
         return value

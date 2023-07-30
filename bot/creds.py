@@ -1,9 +1,12 @@
 import os
-import toml
+
 import dotenv
+import toml
+
+__DEFAULT_TOML_PATH: str = "./secret/keys.toml"
 
 
-def get_from_toml(key: str, toml_path: str = "./secret/keys.toml") -> str | None:
+def get_from_toml(key: str, toml_path: str = __DEFAULT_TOML_PATH) -> str | None:
     # get the file path
     file_path = os.path.join(toml_path)
     if not os.path.exists(file_path):
@@ -42,12 +45,6 @@ def get_from_env(key: str, env_file_path: str | None = None) -> str | None:
 
 
 if __name__ == "__main__":
-    # Expected default file location: ./secret/keys.toml
-    tinkoff = get_from_toml("tinkoff")
-    print("> Tinkoff key obtained:", tinkoff["token"])
-    print("> Alpha vantage api key:", get_from_toml("alpha-vantage")["token"])
-    # print("key obtained:", get_from_env("SOME_TOKEN"))
-    print("> Got from .env file:", get_from_env(
-        "TINKOFF_TOKEN", env_file_path="./secret/.env"))
-    print("> Got from .env file:", get_from_env(
-        "TELEGRAM_API_API_ID", env_file_path="./secret/.env"))
+    # TODO: write some tests
+    print("maybe some tests here, huh?")
+    pass

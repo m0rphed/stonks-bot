@@ -1,19 +1,36 @@
-from supabase import Client as SupabaseClient
+from supabase import Client as SbClient
 
-from db import DatabaseProvider
+from db import IDatabase
 
 
-class SupabaseDB(DatabaseProvider):
+class SupabaseDB(IDatabase):
     def __init__(self, url: str, key: str):
-        self.sb_client: SupabaseClient = SupabaseClient(
+        self.sb_client: SbClient = SbClient(
             supabase_url=url,
             supabase_key=key
         )
+
+    def get_settings_of_user(self, tg_user_id: int):
+        resp = self.sb_client.table("bot_users").select("*").eq(
+            "tg_user_id", tg_user_id
+        ).execute()
+
+        if len(resp.data) == 0:
+            return None
+
+        if len(resp.data) > 0:
+            if len(resp.data) == 1:
+                return resp.data[0]["settings"]
+
+        raise Exception("db error")
 
     def check_user(self, tg_user_id: int):
         resp = self.sb_client.table("bot_users").select("*").eq(
             "tg_user_id", tg_user_id
         ).execute()
+
+        if len(resp.data) == 0:
+            return None
 
         if len(resp.data) > 0:
             if len(resp.data) == 1:
@@ -121,4 +138,3 @@ class SupabaseDB(DatabaseProvider):
 
     def add_or_upd_instrument(self):
         raise NotImplementedError
-    

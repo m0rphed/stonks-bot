@@ -1,56 +1,45 @@
-from abc import abstractmethod
-from typing import Protocol, runtime_checkable
-
-from data_models import ExchangePair, StockMarketInstrument, SearchQueryRes
+from data_provider_protocols import IDataProvider, ProviderType
 
 
-@runtime_checkable
-class ProviderStockMarket(Protocol):
-    @abstractmethod
-    def search_stock_market(self, query: str) -> list[SearchQueryRes]:
-        ...
-
-    @abstractmethod
-    def get_security_by_ticker(self, ticker: str) -> StockMarketInstrument:
-        ...
+def by_name(providers: list[IDataProvider], name: str) -> IDataProvider:
+    for prov in providers:
+        if prov.provider_name == name:
+            return prov
+        raise RuntimeError(f"No data providers with name {name}' found")
 
 
-@runtime_checkable
-class AsyncProviderStockMarket(Protocol):
-    @abstractmethod
-    async def search_stock_market(self, query: str) -> list[SearchQueryRes]:
-        ...
+def filter_by_type(providers: list[IDataProvider], prov_type: ProviderType) -> list:
+    res = [
+        prov for prov in providers
+        if prov.provider_type == prov_type
+    ]
 
-    @abstractmethod
-    async def get_security_by_ticker(self, ticker: str) -> StockMarketInstrument:
-        ...
+    return res
 
 
-# noinspection DuplicatedCode
-@runtime_checkable
-class ProviderCryptoEx(Protocol):
-    @abstractmethod
-    def get_crypto_pair(self, symbol_from: str, symbol_to: str) -> ExchangePair:
-        ...
+def filter_by_class(providers: list[IDataProvider], prov_class) -> list:
+    filtered = []
+    for prov in providers:
+        if isinstance(prov, prov_class):
+            filtered.append(prov)
+
+    return filtered
 
 
-@runtime_checkable
-class AsyncProviderCryptoEx(Protocol):
-    @abstractmethod
-    async def get_crypto_pair(self, symbol_from: str, symbol_to: str) -> ExchangePair:
-        ...
+if __name__ == "__main__":
+    from provider_alpha_vantage import AlphaVantageAPI
 
+    xs = [
+        AlphaVantageAPI("fake_key_01"),
+        AlphaVantageAPI("fake_key_02"),
+        AlphaVantageAPI("fake_key_03"),
+        AlphaVantageAPI("fake_key_04")
+    ]
 
-# noinspection DuplicatedCode
-@runtime_checkable
-class ProviderCurrEx(Protocol):
-    @abstractmethod
-    def get_curr_pair(self, symbol_from: str, symbol_to: str) -> ExchangePair:
-        ...
+    flt = filter_by_type(xs, ProviderType.UNIVERSAL)
+    assert len(flt), len(xs)
 
+    flt = filter_by_class([AlphaVantageAPI("fake_key")], IDataProvider)
+    assert len(flt), 1
 
-@runtime_checkable
-class AsyncProviderCurrEx(Protocol):
-    @abstractmethod
-    async def get_curr_pair(self, symbol_from: str, symbol_to: str) -> ExchangePair:
-        ...
+    print("all tests passed")

@@ -3,9 +3,13 @@ from typing import Protocol, runtime_checkable
 
 
 @runtime_checkable
-class DatabaseProvider(Protocol):
+class IDatabase(Protocol):
     @abstractmethod
-    def check_user(self, tg_user_id):
+    def check_user(self, tg_user_id: int):
+        ...
+
+    @abstractmethod
+    def get_settings_of_user(self, tg_user_id: int):
         ...
 
     @abstractmethod

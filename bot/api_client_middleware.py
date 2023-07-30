@@ -6,7 +6,7 @@ from loguru import logger
 class ApiClientMiddleware(ABC):
     @abstractmethod
     def __init__(self, _key: str):
-        self.inner_client = None
+        self._client = None
         raise NotImplementedError("Expected to implement `__init__` in child class")
 
     async def __aenter__(self):
@@ -14,7 +14,7 @@ class ApiClientMiddleware(ABC):
         return self
 
     async def __aexit__(self, *args, **kwargs):
-        await self.inner_client.close()
+        await self._client.close()
         logger.info(f"API client exited ({self.__class__.__name__})")
 
     def _fail_on_unsafe_init(self) -> None:
@@ -26,7 +26,7 @@ class ApiClientMiddleware(ABC):
     @property
     def client(self):
         self._fail_on_unsafe_init()
-        return self.inner_client
+        return self._client
 
     @property
     def initialized_safely(self) -> bool:
