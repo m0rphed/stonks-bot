@@ -1,6 +1,26 @@
+from postgrest import APIResponse
+from returns.result import Result, Success, Failure
 from supabase import Client as SbClient
 
-from db import IDatabase
+from db import IDatabase, IDatabaseError
+
+
+class SupabaseDbError(IDatabaseError):
+    pass
+
+
+def _exactly_one_or_none(resp: APIResponse) -> Result[dict, str]:
+    if len(resp.data) == 0:
+        return Failure("Query is empty")
+
+    if len(resp.data) == 1:
+        return Success(resp.data[0])
+
+    if len(resp.data) > 0:
+        raise SupabaseDbError(
+            "Query expected to return exactly one result,"
+            " but returned multiple rows"
+        )
 
 
 class SupabaseDB(IDatabase):
@@ -11,32 +31,18 @@ class SupabaseDB(IDatabase):
         )
 
     def get_settings_of_user(self, tg_user_id: int):
-        resp = self.sb_client.table("bot_users").select("*").eq(
-            "tg_user_id", tg_user_id
-        ).execute()
+        found_user = self.check_user(tg_user_id)
+        if found_user is None:
+            raise SupabaseDbError(f"User with tg_user_id: '{tg_user_id}' not found in the database")
 
-        if len(resp.data) == 0:
-            return None
-
-        if len(resp.data) > 0:
-            if len(resp.data) == 1:
-                return resp.data[0]["settings"]
-
-        raise Exception("db error")
+        return found_user["settings"]
 
     def check_user(self, tg_user_id: int):
         resp = self.sb_client.table("bot_users").select("*").eq(
             "tg_user_id", tg_user_id
         ).execute()
 
-        if len(resp.data) == 0:
-            return None
-
-        if len(resp.data) > 0:
-            if len(resp.data) == 1:
-                return resp.data[0]
-
-        raise Exception("db error")
+        return _exactly_one_or_none(resp)
 
     def check_curr_pair(self, code_from: str, code_to: str, data_provider: str):
         resp = self.sb_client.table("instruments").select("*").eq(
@@ -44,11 +50,7 @@ class SupabaseDB(IDatabase):
             "data_provider", data_provider).eq(
             "code_curr", f"{code_from}_{code_to}").execute()
 
-        if len(resp.data) > 0:
-            if len(resp.data) == 1:
-                return resp.data[0]
-
-        raise Exception("db error")
+        return _exactly_one_or_none(resp)
 
     def check_crypto_pair(self, code_from: str, code_to: str, data_provider: str):
         resp = self.sb_client.table("instruments").select("*").eq(
@@ -56,11 +58,7 @@ class SupabaseDB(IDatabase):
             "data_provider", data_provider).eq(
             "code_curr", f"{code_from}_{code_to}").execute()
 
-        if len(resp.data) > 0:
-            if len(resp.data) == 1:
-                return resp.data[0]
-
-        raise Exception("db error")
+        return _exactly_one_or_none(resp)
 
     def check_instrument(self, ticker: str, data_provider: str):
         resp = self.sb_client.table("instruments").select("*").eq(
@@ -69,11 +67,7 @@ class SupabaseDB(IDatabase):
             "data_provider", data_provider).eq(
             "ticker", ticker).execute()
 
-        if len(resp.data) > 0:
-            if len(resp.data) == 1:
-                return resp.data[0]
-
-        raise Exception("db error")
+        return _exactly_one_or_none(resp)
 
     def check_instrument_by_fields(self):
         raise NotImplementedError
@@ -121,8 +115,16 @@ class SupabaseDB(IDatabase):
             # TODO: log error
             return None
 
-    def delete_user(self):
-        raise NotImplementedError
+    def delete_user_by_tg_id(self, tg_user_id: int):
+        try:
+            resp = self.sb_client.table("bot_users").delete().eq(
+                "tg_user_id", tg_user_id
+            ).execute()
+            return resp.data[0]
+
+        except Exception as err:
+            # TODO: log error
+            return None
 
     def delete_instrument(self):
         raise NotImplementedError

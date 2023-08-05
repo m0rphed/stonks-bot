@@ -2,6 +2,10 @@ from abc import abstractmethod
 from typing import Protocol, runtime_checkable
 
 
+class IDatabaseError(Exception):
+    pass
+
+
 @runtime_checkable
 class IDatabase(Protocol):
     @abstractmethod
@@ -57,7 +61,7 @@ class IDatabase(Protocol):
         ...
 
     @abstractmethod
-    def delete_user(self):
+    def delete_user_by_tg_id(self, tg_user_id: int):
         ...
 
     @abstractmethod

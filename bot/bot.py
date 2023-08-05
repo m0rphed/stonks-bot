@@ -1,8 +1,9 @@
 from pyrogram import Client as PyrogramClient
 from pyrogram import enums, filters
-from pyrogram.types import Message
+from pyrogram.types import CallbackQuery, Message
 
 import config
+from bot_helpers import flt_callback_data_starts, ensure_user_authenticated, reply_markup_confirmation
 from db import IDatabase
 from db_supabase import SupabaseDB
 from formatting import msg_error, msg_warning, msg_ok
@@ -32,6 +33,36 @@ bot = TgBot(
 )
 
 
+@bot.app.on_callback_query(flt_callback_data_starts("confirmed --cmd delete_me"))
+async def confirmed_del_tg_user(client: PyrogramClient, query: CallbackQuery):
+    deleted_user = bot.db.delete_user_by_tg_id(query.from_user.id)
+    if deleted_user is None:
+        await query.answer(
+            msg_error("Failed to delete user: db error")
+        )
+        return
+
+    await query.message.reply("👋")
+    await query.answer(
+        msg_ok(
+            f"Successfully deleted ALL DATA of: {query.from_user.id}!"
+            "\nYou can now delete this chat"
+            "\nOR you could start using this bot again 👉 `/sign_in_tg` command"
+        )
+    )
+
+
+@bot.app.on_message(filters.command("delete_me"))
+async def cmd_del_tg_user(client: PyrogramClient, message: Message):
+    user = await ensure_user_authenticated(bot.db, message)
+    raise NotImplementedError()
+    # confirmed --cmd delete_me
+    markup = reply_markup_confirmation(
+        "confirmed --cmd delete_me",
+        "canceled --cmd delete_me"
+    )
+
+
 @bot.app.on_message(filters.command("settings"))
 async def cmd_settings(client: PyrogramClient, message: Message):
     tg_user_id = message.from_user.id
@@ -47,7 +78,21 @@ async def cmd_settings(client: PyrogramClient, message: Message):
         return
 
     user_settings = user["settings"]
+    # if settings None
+    #   -> force user to set providers for each type
+    #   = list all data providers with type = we need a builder for reply markup
     await message.reply(msg_ok(str(user_settings)))
+
+
+async def get_user_providers(tg_user_id: int, provider_type=None):
+    if provider_type is None:
+        bot.db.get_settings_of_user(tg_user_id)
+    raise NotImplementedError()
+
+
+async def get_available_providers():
+    # get all providers passed to bot instance
+    raise NotImplementedError()
 
 
 @bot.app.on_message(filters.command("sign_in_tg"))

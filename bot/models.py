@@ -1,13 +1,12 @@
+import datetime
+import uuid
+from enum import Enum
 from typing import Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Json
 
 
 class User:  # abstract user
-    pass
-
-
-class UserPreferences:  # contains token information
     pass
 
 
@@ -48,16 +47,34 @@ class SearchQueryRes(BaseModel):  # search query result
 
 
 class UserEntity:
-    pass
+    id: uuid.UUID
+    created_at: datetime.datetime
+    tg_user_id: int
+    settings: Optional[Json]
+
+
+class InstrumentType(str, Enum):
+    stock_market_instrument = 'stock_market_instrument'
+    currency_exchange_pair = 'currency_exchange_pair'
+    crypto_exchange_pair = 'crypto_exchange_pair'
 
 
 class InstrumentEntity:
-    pass
-
-
-class ExchangePairEntity:
-    pass
+    id: uuid.UUID
+    updated_at: datetime.datetime
+    symbol: str
+    figi_code: Optional[str]
+    price: Optional[str]
+    exchange_rate: Optional[str]
+    data_provider_code: str
+    type: InstrumentType
 
 
 class TrackingEntity:
-    pass
+    id: uuid.UUID
+    created_at: datetime.datetime
+    instrument: uuid.UUID
+    tracked_by: uuid.UUID
+    on_price: Optional[float]
+    on_rate: Optional[float]
+    notify_daily_at: Optional[datetime.datetime]
