@@ -1,15 +1,21 @@
-from postgrest import APIResponse
+from typing import final
+
+from loguru import logger
+from postgrest import APIResponse, APIError
 from returns.result import Result, Success, Failure
 from supabase import Client as SbClient
 
 from db import IDatabase, IDatabaseError
+from db_helpers import _to_user_entity, _to_instrument
+from models import UserEntity, InstrumentType, InstrumentEntity
 
 
+@final
 class SupabaseDbError(IDatabaseError):
     pass
 
 
-def _exactly_one_or_none(resp: APIResponse) -> Result[dict, str]:
+def _expected_exactly_one(resp: APIResponse) -> Result[dict, any]:
     if len(resp.data) == 0:
         return Failure("Query is empty")
 
@@ -17,6 +23,7 @@ def _exactly_one_or_none(resp: APIResponse) -> Result[dict, str]:
         return Success(resp.data[0])
 
     if len(resp.data) > 0:
+        logger.trace("<supabase> data integrity error")
         raise SupabaseDbError(
             "Query expected to return exactly one result,"
             " but returned multiple rows"
@@ -30,61 +37,82 @@ class SupabaseDB(IDatabase):
             supabase_key=key
         )
 
-    def get_settings_of_user(self, tg_user_id: int):
-        found_user = self.check_user(tg_user_id)
-        if found_user is None:
-            raise SupabaseDbError(f"User with tg_user_id: '{tg_user_id}' not found in the database")
+    def __find_instrument_of_type(
+            self,
+            type_of_instr: InstrumentType,
+            symbol: str,
+            data_provider: str
+    ) -> APIResponse:
 
-        return found_user["settings"]
+        resp = self.sb_client.table("fin_instruments").select("*").eq(
+            "type", type_of_instr).eq(
+            "data_provider", data_provider).eq(
+            "symbol", symbol).execute()
 
-    def check_user(self, tg_user_id: int):
+        return resp
+
+    def find_user_by_tg_id(self, tg_user_id: int) -> Result[UserEntity, any]:
         resp = self.sb_client.table("bot_users").select("*").eq(
             "tg_user_id", tg_user_id
         ).execute()
 
-        return _exactly_one_or_none(resp)
+        found_user: Result = _to_user_entity(_expected_exactly_one(resp))
+        if isinstance(found_user, Failure):
+            logger.info(f"<supabase> user not found: {found_user.failure()}; 'tg_user_id': {tg_user_id}")
 
-    def check_curr_pair(self, code_from: str, code_to: str, data_provider: str):
-        resp = self.sb_client.table("instruments").select("*").eq(
-            "is_curr_pair", True).eq(
-            "data_provider", data_provider).eq(
-            "code_curr", f"{code_from}_{code_to}").execute()
+        return found_user
 
-        return _exactly_one_or_none(resp)
+    def get_settings_of_user(self, tg_user_id: int) -> Result[dict, any]:
+        res = self.find_user_by_tg_id(tg_user_id)
+        if isinstance(res, Failure):
+            logger.error(f"<supabase> Error getting settings of user: '{tg_user_id}'")
+            return Failure(res.failure())
 
-    def check_crypto_pair(self, code_from: str, code_to: str, data_provider: str):
-        resp = self.sb_client.table("instruments").select("*").eq(
-            "is_crypto_pair", True).eq(
-            "data_provider", data_provider).eq(
-            "code_curr", f"{code_from}_{code_to}").execute()
+        return Success(res.unwrap().settings)
 
-        return _exactly_one_or_none(resp)
+    def find_curr_pair(self, code_from: str, code_to: str, data_provider: str) -> Result[InstrumentEntity, any]:
+        resp = self.__find_instrument_of_type(
+            InstrumentType.curr_pair,
+            f"{code_from}_{code_to}",
+            data_provider
+        )
 
-    def check_instrument(self, ticker: str, data_provider: str):
-        resp = self.sb_client.table("instruments").select("*").eq(
-            "is_crypto_pair", False).eq(
-            "is_curr_pair", False).eq(
-            "data_provider", data_provider).eq(
-            "ticker", ticker).execute()
+        return _to_instrument(_expected_exactly_one(resp))
 
-        return _exactly_one_or_none(resp)
+    def find_crypto_pair(self, code_from: str, code_to: str, data_provider: str) -> Result[InstrumentEntity, any]:
+        resp = self.__find_instrument_of_type(
+            InstrumentType.crypto_pair,
+            f"{code_from}_{code_to}",
+            data_provider
+        )
 
-    def check_instrument_by_fields(self):
+        return _to_instrument(_expected_exactly_one(resp))
+
+    def find_stock_market_instrument(self, ticker: str, data_provider: str) -> Result[InstrumentEntity, any]:
+        resp = self.__find_instrument_of_type(
+            InstrumentType.sm_instrument,
+            ticker,
+            data_provider
+        )
+
+        return _to_instrument(_expected_exactly_one(resp))
+
+    def find_instrument_by_fields(self, fields: dict) -> Result[InstrumentEntity, any]:
         raise NotImplementedError
 
-    def check_tracking(self):
+    def find_tracking(self):
         raise NotImplementedError
 
-    def check_tracking_by_fields(self):
+    def find_tracking_by_fields(self):
         raise NotImplementedError
 
-    def add_user_by_id(self, tg_user_id: int):
+    def add_user_by_tg_id(self, tg_user_id: int):
         try:
             resp = self.sb_client.table("bot_users").insert(
                 {"tg_user_id": tg_user_id}).execute()
             return resp.data[0]
 
-        except Exception as err:
+        except APIError as err:
             # TODO: log error
             return None
 
@@ -101,7 +129,7 @@ class SupabaseDB(IDatabase):
                 instrument_fields).execute()
             return resp.data[0]
 
-        except Exception as err:
+        except APIError as err:
             # TODO: log error
             return None
 
@@ -111,7 +139,7 @@ class SupabaseDB(IDatabase):
             resp = self.sb_client.table("tracking").insert(tracking_fields).execute()
             return resp.data[0]
 
-        except Exception as err:
+        except APIError as err:
             # TODO: log error
             return None
 
@@ -122,8 +150,8 @@ class SupabaseDB(IDatabase):
             ).execute()
             return resp.data[0]
 
-        except Exception as err:
-            # TODO: log error
+        except APIError as err:
+            logger.error(f"Failed to delete '{tg_user_id}': {err}")
             return None
 
     def delete_instrument(self):

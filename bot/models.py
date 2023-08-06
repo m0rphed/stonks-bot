@@ -1,9 +1,9 @@
 import datetime
-import uuid
-from enum import Enum
+from enum import Enum, unique
 from typing import Optional
+from uuid import UUID, uuid4
 
-from pydantic import BaseModel, Json
+from pydantic import BaseModel, Json, Field
 
 
 class User:  # abstract user
@@ -46,35 +46,36 @@ class SearchQueryRes(BaseModel):  # search query result
         return md_str
 
 
-class UserEntity:
-    id: uuid.UUID
+class UserEntity(BaseModel):
+    id: UUID = Field(default_factory=uuid4)
     created_at: datetime.datetime
     tg_user_id: int
-    settings: Optional[Json]
+    settings: dict | None
 
 
+@unique
 class InstrumentType(str, Enum):
-    stock_market_instrument = 'stock_market_instrument'
-    currency_exchange_pair = 'currency_exchange_pair'
-    crypto_exchange_pair = 'crypto_exchange_pair'
+    sm_instrument = "stock_market_instrument"
+    curr_pair = "currency_exchange_pair"
+    crypto_pair = "crypto_exchange_pair"
 
 
-class InstrumentEntity:
-    id: uuid.UUID
+class InstrumentEntity(BaseModel):
+    id: UUID = Field(default_factory=uuid4)
     updated_at: datetime.datetime
     symbol: str
-    figi_code: Optional[str]
-    price: Optional[str]
-    exchange_rate: Optional[str]
+    figi_code: str | None
+    price: float | None
+    exchange_rate: float | None
     data_provider_code: str
     type: InstrumentType
 
 
-class TrackingEntity:
-    id: uuid.UUID
+class TrackingEntity(BaseModel):
+    id: UUID = Field(default_factory=uuid4)
     created_at: datetime.datetime
-    instrument: uuid.UUID
-    tracked_by: uuid.UUID
-    on_price: Optional[float]
-    on_rate: Optional[float]
+    instrument: UUID = Field(default_factory=uuid4)
+    tracked_by: UUID = Field(default_factory=uuid4)
+    on_price: float | None
+    on_rate: float | None
     notify_daily_at: Optional[datetime.datetime]

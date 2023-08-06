@@ -1,6 +1,10 @@
 from abc import abstractmethod
 from typing import Protocol, runtime_checkable
 
+from returns.result import Result
+
+from models import UserEntity, InstrumentEntity, TrackingEntity
+
 
 class IDatabaseError(Exception):
     pass
@@ -9,39 +13,39 @@ class IDatabaseError(Exception):
 @runtime_checkable
 class IDatabase(Protocol):
     @abstractmethod
-    def check_user(self, tg_user_id: int):
+    def find_user_by_tg_id(self, tg_user_id: int) -> Result[UserEntity, any]:
         ...
 
     @abstractmethod
-    def get_settings_of_user(self, tg_user_id: int):
+    def get_settings_of_user(self, tg_user_id: int) -> Result[dict, any]:
         ...
 
     @abstractmethod
-    def check_curr_pair(self, code_from: str, code_to: str, data_provider: str):
+    def find_curr_pair(self, code_from: str, code_to: str, data_provider: str) -> Result[InstrumentEntity, any]:
         ...
 
     @abstractmethod
-    def check_crypto_pair(self, code_from: str, code_to: str, data_provider: str):
+    def find_crypto_pair(self, code_from: str, code_to: str, data_provider: str) -> Result[InstrumentEntity, any]:
         ...
 
     @abstractmethod
-    def check_instrument(self, ticker: str, data_provider: str):
+    def find_stock_market_instrument(self, ticker: str, data_provider: str) -> Result[InstrumentEntity, any]:
         ...
 
     @abstractmethod
-    def check_instrument_by_fields(self):
+    def find_instrument_by_fields(self, fields: dict) -> Result[InstrumentEntity, any]:
         ...
 
     @abstractmethod
-    def check_tracking(self):
+    def find_tracking(self) -> Result[TrackingEntity, any]:
         ...
 
     @abstractmethod
-    def check_tracking_by_fields(self):
+    def find_tracking_by_fields(self) -> Result[TrackingEntity, any]:
         ...
 
     @abstractmethod
-    def add_user_by_id(self, tg_user_id: int):
+    def add_user_by_tg_id(self, tg_user_id: int):
         ...
 
     @abstractmethod
