@@ -1,16 +1,28 @@
 from abc import abstractmethod
-from enum import Enum, unique
+from enum import unique, StrEnum
 from typing import Protocol, runtime_checkable
 
 from models import ExchangePair, StockMarketInstrument, SearchQueryRes
 
 
 @unique
-class ProviderType(str, Enum):
-    STOCK_MARKET = "provider of stock market data"
-    CURR_FOREX = "provider of foreign exchange market data"
-    CURR_CRYPTO = "provider of cryptocurrency market data"
-    UNIVERSAL = "provider of various market data"
+class ProviderT(StrEnum):
+    STOCK_MARKET = "sm"
+    CURR_FOREX = "frx"
+    CURR_CRYPTO = "crp"
+    UNIVERSAL = "uni"
+
+    @property
+    def description(self) -> str:
+        match self.value:
+            case "uni":
+                return "universal data provider: stocks, forex, crypto"
+            case "sm":
+                return "stock market data provider: stocks, bonds, etc"
+            case "frx":
+                return "foreign fiat currency data provider: exchange rates"
+            case "crp":
+                return "crypto currency data provider: crypto exchange rates"
 
 
 # Base protocol for data providers
@@ -18,7 +30,7 @@ class ProviderType(str, Enum):
 class IDataProvider(Protocol):
     @property
     @abstractmethod
-    def provider_type(self) -> ProviderType:
+    def provider_type(self) -> ProviderT:
         ...
 
     @property

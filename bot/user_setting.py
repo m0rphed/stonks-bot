@@ -1,12 +1,12 @@
 from typing import TypedDict, Optional
 
-from data_provider_protocols import ProviderType
+from data_provider_protocols import ProviderT
 
 
 class ProviderSettings(TypedDict):
     is_key_required: bool
     prov_name: str
-    prov_type: ProviderType
+    prov_type: ProviderT
     token_or_key: Optional[str]
 
 

@@ -1,4 +1,4 @@
-from data_provider_protocols import IDataProvider, ProviderType
+from data_provider_protocols import IDataProvider, ProviderT
 
 
 def by_name(providers: list[IDataProvider], name: str) -> IDataProvider:
@@ -8,7 +8,7 @@ def by_name(providers: list[IDataProvider], name: str) -> IDataProvider:
         raise RuntimeError(f"No data providers with name {name}' found")
 
 
-def filter_by_type(providers: list[IDataProvider], prov_type: ProviderType) -> list:
+def filter_by_type(providers: list[IDataProvider], prov_type: ProviderT) -> list:
     res = [
         prov for prov in providers
         if prov.provider_type == prov_type
@@ -36,7 +36,7 @@ if __name__ == "__main__":
         AlphaVantageAPI("fake_key_04")
     ]
 
-    flt = filter_by_type(xs, ProviderType.UNIVERSAL)
+    flt = filter_by_type(xs, ProviderT.UNIVERSAL)
     assert len(flt), len(xs)
 
     flt = filter_by_class([AlphaVantageAPI("fake_key")], IDataProvider)

@@ -1,5 +1,7 @@
 import emoji
 
+from data_provider_protocols import IDataProvider
+
 
 def msg_warning(msg: str) -> str:
     return "⚠️ " + msg
@@ -54,3 +56,12 @@ def curr_pair_confirmation(
                     " click the button below to confirm."
 
     return reply_message
+
+
+def msg_list_providers(providers: list[IDataProvider]) -> str:
+    msg = "Available data providers:\n"
+    for available_prov in providers:
+        name = available_prov.provider_name
+        prov_type = available_prov.provider_type
+        msg += f"\n• `{name}` 👉 {prov_type.description}"
+    return msg

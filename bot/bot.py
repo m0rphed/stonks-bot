@@ -1,13 +1,25 @@
 from pyrogram import Client as PyrogramClient
 from pyrogram import enums, filters
-from pyrogram.types import CallbackQuery, Message
+from pyrogram.types import (
+    CallbackQuery,
+    Message,
+    InlineKeyboardMarkup,
+    InlineKeyboardButton
+)
 from returns.result import Failure, Success
 
 import config
-from bot_helpers import filter_cb_data_starts, confirmation_markup
+import custom_filters
+from bot_helpers import confirmation_markup, cancel_btn, chose_provider_markup
+from data_provider_protocols import ProviderT
 from db import IDatabase
 from db_supabase import SupabaseDB
-from formatting import msg_error, msg_warning, msg_ok
+from formatting import (
+    msg_error,
+    msg_warning,
+    msg_ok,
+    msg_list_providers
+)
 from models import SearchQueryRes
 from provider_alpha_vantage import AlphaVantageAPI
 from tg_bot import TelegramCreds, TgBot
@@ -34,16 +46,70 @@ bot = TgBot(
 )
 
 
-@bot.app.on_callback_query(filter_cb_data_starts("canceled"))
-async def cancellation_handler(client: PyrogramClient, query: CallbackQuery):
+def _providers_settings(str_type_value: str, prov_name: str) -> dict:
+    match str_type_value:
+        case ProviderT.UNIVERSAL:
+            return {
+                "provider_stock_market": prov_name,
+                "provider_currency": prov_name,
+                "provider_crypto": prov_name
+            }
+
+        case ProviderT.CURR_CRYPTO:
+            return {
+                "provider_crypto": prov_name
+            }
+
+        case ProviderT.CURR_FOREX:
+            return {
+                "provider_currency": prov_name,
+            }
+
+        case ProviderT.STOCK_MARKET:
+            return {
+                "provider_stock_market": prov_name,
+            }
+
+
+@bot.app.on_callback_query(custom_filters.callback_data_starts("confirmed --cmd prov"))
+async def provider_set_handler(_client: PyrogramClient, query: CallbackQuery):
+    params = query.data.replace("confirmed --cmd prov", "").strip()
+    prov_t, prov_name = params.split()
+    prov_settings = _providers_settings(prov_t, prov_name)
+
+    bot.db.update_user(query.from_user.id, {
+        "settings": prov_settings
+    })
+
+    await query.message.reply(msg_ok("User settings updated!"))
+    await query.message.delete()
+
+
+@bot.app.on_callback_query(custom_filters.callback_data_starts("confirmed --cmd prvs"))
+async def set_providers_handler(_client: PyrogramClient, query: CallbackQuery):
+    prov_name = query.data.replace("confirmed --cmd prvs", "").strip()
+
+    for prov in bot.data_providers:
+        if prov.provider_name == prov_name:
+            msg, markup = chose_provider_markup(prov)
+            await query.message.reply(
+                msg,
+                reply_markup=markup
+            )
+            await query.message.delete()
+            return
+
+
+@bot.app.on_callback_query(custom_filters.callback_data_starts("canceled"))
+async def cancellation_cb_handler(_client: PyrogramClient, query: CallbackQuery):
     await query.message.reply(
         msg_ok("Operation cancelled by user")
     )
     await query.message.delete()
 
 
-@bot.app.on_callback_query(filter_cb_data_starts("confirmed --cmd delete_me"))
-async def confirmed_del_tg_user(client: PyrogramClient, query: CallbackQuery):
+@bot.app.on_callback_query(custom_filters.callback_data_starts("confirmed --cmd delete_me"))
+async def confirmed_del_tg_user(_client: PyrogramClient, query: CallbackQuery):
     if bot.db.delete_user_by_tg_id(query.from_user.id) is None:
         await query.answer(
             msg_error("Failed to delete user: db error")
@@ -63,7 +129,7 @@ async def confirmed_del_tg_user(client: PyrogramClient, query: CallbackQuery):
 
 
 @bot.app.on_message(filters.command("delete_me"))
-async def cmd_del_tg_user(client: PyrogramClient, message: Message):
+async def cmd_del_tg_user(_client: PyrogramClient, message: Message):
     found_user = bot.db.find_user_by_tg_id(message.from_user.id)
     if isinstance(found_user, Failure):
         await message.reply(
@@ -75,7 +141,7 @@ async def cmd_del_tg_user(client: PyrogramClient, message: Message):
         return
 
     confirmation = confirmation_markup(
-        f"confirmed --cmd delete_me",
+        "confirmed --cmd delete_me",
         "canceled --cmd delete_me"
     )
 
@@ -87,7 +153,7 @@ async def cmd_del_tg_user(client: PyrogramClient, message: Message):
 
 
 @bot.app.on_message(filters.command("settings"))
-async def cmd_settings(client: PyrogramClient, message: Message):
+async def cmd_settings(_client: PyrogramClient, message: Message):
     user_settings = bot.db.get_settings_of_user(message.from_user.id)
     if isinstance(user_settings, Failure):
         await message.reply(
@@ -107,19 +173,55 @@ async def cmd_settings(client: PyrogramClient, message: Message):
     )
 
 
-async def get_user_providers(tg_user_id: int, provider_type=None):
-    # if provider_type is None:
-    #     bot.db.get_settings_of_user(tg_user_id)
-    raise NotImplementedError()
+async def running_without_providers(message: Message):
+    await message.reply(
+        msg_error(
+            "Bot running without any data providers passed"
+        )
+    )
 
 
-async def get_available_providers():
-    # get all providers passed to bot instance
-    raise NotImplementedError()
+@bot.app.on_message(filters.command("set_providers"))
+async def cmd_set_providers(_client: PyrogramClient, message: Message):
+    if len(bot.data_providers) == 0:
+        await running_without_providers(message)
+        return
+
+    buttons = []
+    for data_prov in bot.data_providers:
+        name = data_prov.provider_name
+        btn = InlineKeyboardButton(
+            f"🔧 Set up '{name}'",
+            callback_data=f"confirmed --cmd prvs {name}"
+        )
+        buttons.append([btn])
+
+    # add cancellation button
+    buttons.append(
+        [cancel_btn("--cmd prvs")]
+    )
+
+    await message.reply(
+        msg_list_providers(bot.data_providers),  # message contains all available providers
+        reply_markup=InlineKeyboardMarkup(buttons)  # reply markup with all available providers
+    )
+
+
+@bot.app.on_message(filters.command("providers"))
+async def cmd_get_available_providers(_client: PyrogramClient, message: Message):
+    if len(bot.data_providers) == 0:
+        await running_without_providers(message)
+        return
+
+    await message.reply(
+        msg_list_providers(
+            bot.data_providers
+        )
+    )
 
 
 @bot.app.on_message(filters.command("sign_in_tg"))
-async def cmd_sign_in_tg(client: PyrogramClient, message: Message):
+async def cmd_sign_in_tg(_client: PyrogramClient, message: Message):
     tg_id = message.from_user.id
     match bot.db.find_user_by_tg_id(tg_id):
         case Success(_):
@@ -156,7 +258,7 @@ async def cmd_sign_in_tg(client: PyrogramClient, message: Message):
 
 
 @bot.app.on_message(filters.command("search_stock_market"))
-async def cmd_search_stock_market(client: PyrogramClient, message: Message):
+async def cmd_search_stock_market(_client: PyrogramClient, message: Message):
     query = message.text.replace("/search_stock_market", "").strip()
     if query is None or query == "" or query == " ":
         await message.reply(

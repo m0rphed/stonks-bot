@@ -16,7 +16,7 @@ from data_provider_protocols import (
 from db import IDatabase
 
 
-@dataclass
+@dataclass(frozen=True)
 class TelegramCreds:
     api_id: int
     api_hash: str

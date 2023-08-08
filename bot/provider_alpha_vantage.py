@@ -9,7 +9,7 @@ from data_provider_protocols import (
     IAsyncProviderStockMarket,
     IAsyncProviderCurrEx,
     IAsyncProviderCryptoEx,
-    ProviderType
+    ProviderT
 )
 from models_alpha_vantage import (
     StockMarketInstrumentAV,
@@ -45,8 +45,8 @@ class AlphaVantageAPI(IAsyncProviderStockMarket, IAsyncProviderCurrEx, IAsyncPro
         return self.data_provider_name
 
     @property
-    def provider_type(self) -> ProviderType:
-        return ProviderType.UNIVERSAL
+    def provider_type(self) -> ProviderT:
+        return ProviderT.UNIVERSAL
 
     def __init__(self, key: str):
         self._api_key = key

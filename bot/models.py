@@ -1,9 +1,9 @@
 import datetime
-from enum import Enum, unique
+from enum import unique, StrEnum
 from typing import Optional
 from uuid import UUID, uuid4
 
-from pydantic import BaseModel, Json, Field
+from pydantic import BaseModel, Field
 
 
 class User:  # abstract user
@@ -54,7 +54,7 @@ class UserEntity(BaseModel):
 
 
 @unique
-class InstrumentType(str, Enum):
+class InstrumentType(StrEnum):
     sm_instrument = "stock_market_instrument"
     curr_pair = "currency_exchange_pair"
     crypto_pair = "crypto_exchange_pair"

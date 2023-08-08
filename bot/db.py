@@ -77,7 +77,7 @@ class IDatabase(Protocol):
         ...
 
     @abstractmethod
-    def update_user(self):
+    def update_user(self, user_id: int, fields: dict):
         ...
 
     @abstractmethod

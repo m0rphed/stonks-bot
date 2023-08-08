@@ -6,7 +6,7 @@ from returns.result import Result, Success, Failure
 from supabase import Client as SbClient
 
 from db import IDatabase, IDatabaseError
-from db_helpers import _to_user_entity, _to_instrument
+from db_helpers import to_user_entity, to_instrument
 from models import UserEntity, InstrumentType, InstrumentEntity
 
 
@@ -56,9 +56,9 @@ class SupabaseDB(IDatabase):
             "tg_user_id", tg_user_id
         ).execute()
 
-        found_user: Result = _to_user_entity(_expected_exactly_one(resp))
+        found_user: Result = to_user_entity(_expected_exactly_one(resp))
         if isinstance(found_user, Failure):
-            logger.info(f"<supabase> user not found: {found_user.failure()}; 'tg_user_id': {tg_user_id}")
+            logger.info(f"<supabase> User not found: {found_user.failure()}; 'tg_user_id': {tg_user_id}")
 
         return found_user
 
@@ -77,7 +77,7 @@ class SupabaseDB(IDatabase):
             data_provider
         )
 
-        return _to_instrument(_expected_exactly_one(resp))
+        return to_instrument(_expected_exactly_one(resp))
 
     def find_crypto_pair(self, code_from: str, code_to: str, data_provider: str) -> Result[InstrumentEntity, any]:
         resp = self.__find_instrument_of_type(
@@ -86,7 +86,7 @@ class SupabaseDB(IDatabase):
             data_provider
         )
 
-        return _to_instrument(_expected_exactly_one(resp))
+        return to_instrument(_expected_exactly_one(resp))
 
     def find_stock_market_instrument(self, ticker: str, data_provider: str) -> Result[InstrumentEntity, any]:
         resp = self.__find_instrument_of_type(
@@ -95,7 +95,7 @@ class SupabaseDB(IDatabase):
             data_provider
         )
 
-        return _to_instrument(_expected_exactly_one(resp))
+        return to_instrument(_expected_exactly_one(resp))
 
     def find_instrument_by_fields(self, fields: dict) -> Result[InstrumentEntity, any]:
         raise NotImplementedError
@@ -125,7 +125,7 @@ class SupabaseDB(IDatabase):
     def add_instrument(self, instrument_fields: dict):
         try:
             # TODO: does response need additional handling in such cases?
-            resp = self.sb_client.table("instruments").insert(
+            resp = self.sb_client.table("fin_instruments").insert(
                 instrument_fields).execute()
             return resp.data[0]
 
@@ -160,8 +160,11 @@ class SupabaseDB(IDatabase):
     def delete_tracking(self):
         raise NotImplementedError
 
-    def update_user(self):
-        raise NotImplementedError
+    def update_user(self, tg_user_id: int, fields: dict):
+        # TODO: do something with response maybe?
+        api_resp = self.sb_client.table("bot_users").update(fields).eq("tg_user_id", tg_user_id).execute()
+        logger.info(f"User settings updated: {fields}")
+        # raise NotImplementedError("Not finished")
 
     def update_instrument(self):
         raise NotImplementedError
