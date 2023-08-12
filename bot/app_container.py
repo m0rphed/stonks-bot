@@ -11,7 +11,7 @@ from db import IDatabase
 
 @dataclass(frozen=True)
 class AppContainer:
-    db: IDatabase
+    database: IDatabase
     data_providers: list[IDataProvider]
 
     def get_provider_by_name(self, name: str):

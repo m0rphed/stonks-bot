@@ -31,7 +31,7 @@ from models import (
 
 
 async def cmd_delete_me(_client: Client, message: Message, app: AppContainer):
-    found_user = app.db.find_user_by_tg_id(message.from_user.id)
+    found_user = app.database.find_user_by_tg_id(message.from_user.id)
     if isinstance(found_user, Failure):
         await message.reply(
             msg_error(
@@ -54,7 +54,7 @@ async def cmd_delete_me(_client: Client, message: Message, app: AppContainer):
 
 
 async def cmd_settings(_client: Client, message: Message, app: AppContainer):
-    user_settings = app.db.get_settings_of_user(message.from_user.id)
+    user_settings = app.database.get_settings_of_user(message.from_user.id)
     if isinstance(user_settings, Failure):
         await message.reply(
             msg_error(
@@ -116,7 +116,7 @@ async def cmd_providers(_client: Client, message: Message, app: AppContainer):
 
 async def cmd_sign_in_tg(_client: Client, message: Message, app: AppContainer):
     tg_id = message.from_user.id
-    match app.db.find_user_by_tg_id(tg_id):
+    match app.database.find_user_by_tg_id(tg_id):
         case Success(_):
             await message.reply(
                 msg_ok(
@@ -125,7 +125,7 @@ async def cmd_sign_in_tg(_client: Client, message: Message, app: AppContainer):
             )
 
         case Failure(_):
-            user_added = app.db.add_user_by_tg_id(tg_id)
+            user_added = app.database.add_user_by_tg_id(tg_id)
 
             if user_added is None:
                 await message.reply(
@@ -162,7 +162,7 @@ async def cmd_search_stock_market(_client: Client, message: Message, app: AppCon
         )
         return
 
-    res = app.db.get_settings_of_user(message.from_user.id)
+    res = app.database.get_settings_of_user(message.from_user.id)
     match res:
         case Failure("Query is empty"):
             await message.reply(msg_error("You are not signed in"))
@@ -222,7 +222,7 @@ async def cmd_track_stock(_client: Client, message: Message, app: AppContainer):
     ticker, price = args
 
     user_id: int = message.from_user.id
-    user_res = app.db.find_user_by_tg_id(user_id)
+    user_res = app.database.find_user_by_tg_id(user_id)
     if isinstance(user_res, Failure) or user_res is None:
         await message.reply(
             msg_error(
@@ -255,7 +255,7 @@ async def cmd_track_stock(_client: Client, message: Message, app: AppContainer):
     prov = app.get_prov_stock_market(prov_name)
     security = await prov.get_security_by_ticker(ticker=ticker)
 
-    instr_res = app.db.find_stock_market_instrument(
+    instr_res = app.database.find_stock_market_instrument(
         security.symbol,
         security.data_provider
     )
@@ -266,12 +266,12 @@ async def cmd_track_stock(_client: Client, message: Message, app: AppContainer):
             instrument=instr_res.unwrap(),
             on_price=price,
         )
-        _ = app.db.add_tracking(tracking_obj)
+        _ = app.database.add_tracking(tracking_obj)
         await message.reply(msg_ok("Added for tracking"))
         return
 
     else:
-        instr: InstrumentEntity = res_to_instrument(Success(app.db.add_instrument(
+        instr: InstrumentEntity = res_to_instrument(Success(app.database.add_instrument(
             {
                 "symbol": ticker,
                 "price": security.price,
@@ -285,7 +285,7 @@ async def cmd_track_stock(_client: Client, message: Message, app: AppContainer):
             instrument=instr,
             on_price=price,
         )
-        _ = app.db.add_tracking(tracking_obj)
+        _ = app.database.add_tracking(tracking_obj)
         await message.reply(msg_ok("Added for tracking"))
         return
 

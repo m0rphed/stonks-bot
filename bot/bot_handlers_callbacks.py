@@ -15,7 +15,7 @@ async def provider_set_handler(_client: Client, query: CallbackQuery, app: AppCo
     prov_t, prov_name = params.split()
     prov_settings = _providers_settings(prov_t, prov_name)
 
-    app.db.update_user(query.from_user.id, {
+    app.database.update_user(query.from_user.id, {
         "settings": prov_settings
     })
 
@@ -45,7 +45,7 @@ async def cancellation_cb_handler(_client: Client, query: CallbackQuery, app: Ap
 
 
 async def confirmed_delete_me(_client: Client, query: CallbackQuery, app: AppContainer):
-    if app.db.delete_user_by_tg_id(query.from_user.id) is None:
+    if app.database.delete_user_by_tg_id(query.from_user.id) is None:
         await query.answer(
             msg_error("Failed to delete user: db error")
         )

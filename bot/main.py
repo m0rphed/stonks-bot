@@ -1,16 +1,15 @@
 import asyncio
-import functools
 
 from loguru import logger
-from pyrogram import Client, idle, filters
-from pyrogram.handlers import MessageHandler
+from pyrogram import Client, idle
 
+import bot_handlers_callbacks as on_cb_query
+import bot_handlers_on_msg as on_msg
 import config
 from app_container import AppContainer
 from bot_handlers_db_updates import on_instrument_update
-from bot_handlers_on_msg import cmd_settings
 from db import IDatabase
-from db_listener_supabase import SbListener
+from db_listener_supabase import SupabaseListener
 from db_supabase import SupabaseDB
 from provider_alpha_vantage import AlphaVantageAPI
 
@@ -25,12 +24,12 @@ app = AppContainer(
     data_providers=[
         AlphaVantageAPI(key=config.ALPHA_VANTAGE_KEY)
     ],
-    db=db
+    database=db
 )
 
 
 async def start_listener():
-    lis = SbListener(
+    lis = SupabaseListener(
         sb_id=config.SUPABASE_ID,
         sb_key=config.SUPABASE_KEY,
     )
@@ -38,7 +37,7 @@ async def start_listener():
     await lis.set_up("fin_instruments")
     logger.info(f"<listener> socket and channel set up: {lis.ready_to_listen}")
 
-    cl_for_updates = Client(
+    c_for_updates = Client(
         f"{BOT_SESSION_NAME}_upd-listener",
         api_id=config.TELEGRAM_API_ID,
         api_hash=config.TELEGRAM_API_HASH,
@@ -46,34 +45,33 @@ async def start_listener():
     )
 
     lis.add_callback(
-        "UPDATE", on_instrument_update, tg_client=cl_for_updates, database=db
+        "UPDATE", on_instrument_update,
+        tg_client=c_for_updates,
+        database=db
     )
 
-    await cl_for_updates.start()
+    await c_for_updates.start()
     await asyncio.gather(lis.start_listening(), idle())
-    await cl_for_updates.stop()
+    await c_for_updates.stop()
 
 
 async def start_main_bot():
-    cl_main = Client(
+    c_main = Client(
         f"{BOT_SESSION_NAME}_main",
         api_id=config.TELEGRAM_API_ID,
         api_hash=config.TELEGRAM_API_HASH,
         bot_token=config.TELEGRAM_BOT_TOKEN
     )
 
-    handle_settings = MessageHandler(
-        functools.partial(
-            cmd_settings,
-            app=app),
-        filters.command("settings")
-    )
+    for command_handler in on_msg.get_commands(app):
+        c_main.add_handler(command_handler)
 
-    cl_main.add_handler(handle_settings)
+    for cb_query_handler in on_cb_query.get_callbacks_handlers(app):
+        c_main.add_handler(cb_query_handler)
 
-    await cl_main.start()
+    await c_main.start()
     await idle()
-    await cl_main.stop()
+    await c_main.stop()
 
 
 async def main():

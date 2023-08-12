@@ -9,7 +9,7 @@ from db_listener import IDatabaseListener
 
 
 @final
-class SbListener(IDatabaseListener):
+class SupabaseListener(IDatabaseListener):
     def __init__(self, sb_id: str, sb_key: str):
         self.URL = \
             f"wss://{sb_id}.supabase.co" \
