@@ -1,6 +1,7 @@
-from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 
 from data_provider_protocols import ProviderT, IDataProvider
+from formatting import msg_error
 
 
 def confirmation_markup(cb_data_confirmed: str, cb_data_canceled: str) -> InlineKeyboardMarkup:
@@ -74,3 +75,36 @@ def chose_provider_markup(prov: IDataProvider) -> tuple[str, InlineKeyboardMarku
                 ]
             )
             return msg, markup
+
+
+async def _running_without_providers(message: Message):
+    await message.reply(
+        msg_error(
+            "Bot running without any data providers passed"
+        )
+    )
+
+
+def _providers_settings(str_type_value: str, prov_name: str) -> dict:
+    match str_type_value:
+        case ProviderT.UNIVERSAL:
+            return {
+                "provider_stock_market": prov_name,
+                "provider_currency": prov_name,
+                "provider_crypto": prov_name
+            }
+
+        case ProviderT.CURR_CRYPTO:
+            return {
+                "provider_crypto": prov_name
+            }
+
+        case ProviderT.CURR_FOREX:
+            return {
+                "provider_currency": prov_name,
+            }
+
+        case ProviderT.STOCK_MARKET:
+            return {
+                "provider_stock_market": prov_name,
+            }

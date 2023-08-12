@@ -13,6 +13,10 @@ class IDatabaseError(Exception):
 @runtime_checkable
 class IDatabase(Protocol):
     @abstractmethod
+    def find_user_by_fields(self, fields: dict) -> dict:
+        ...
+
+    @abstractmethod
     def find_user_by_tg_id(self, tg_user_id: int) -> Result[UserEntity, any]:
         ...
 
@@ -29,7 +33,7 @@ class IDatabase(Protocol):
         ...
 
     @abstractmethod
-    def find_stock_market_instrument(self, ticker: str, data_provider: str) -> Result[InstrumentEntity, any]:
+    def find_stock_market_instrument(self, symbol: str, data_provider: str) -> Result[InstrumentEntity, any]:
         ...
 
     @abstractmethod
@@ -41,7 +45,7 @@ class IDatabase(Protocol):
         ...
 
     @abstractmethod
-    def find_tracking_by_fields(self) -> Result[TrackingEntity, any]:
+    def find_trackings_by_fields(self, fields: dict) -> list[dict]:
         ...
 
     @abstractmethod

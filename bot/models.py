@@ -79,3 +79,19 @@ class TrackingEntity(BaseModel):
     on_price: float | None
     on_rate: float | None
     notify_daily_at: Optional[datetime.datetime]
+
+
+def create_tracking_obj(
+        user: UserEntity,
+        instrument: InstrumentEntity,
+        on_price: float | None = None,
+        on_rate: float | None = None,
+        notify_daily_at: datetime.datetime | None = None) -> dict:
+    # set everything except "id", and "created_at" field
+    return {
+        "instrument": str(instrument.id),
+        "tracked_by": str(user.id),
+        "on_price": on_price,
+        "on_rate": on_rate,
+        "notify_daily_at": notify_daily_at
+    }
