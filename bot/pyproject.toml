@@ -35,3 +35,6 @@ dev = [
     "notebook>=6.5.4",
     "isort>=5.12.0",
 ]
+
+[tool.mypy]
+plugins = ["returns.contrib.mypy.returns_plugin"]
