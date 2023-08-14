@@ -1,7 +1,9 @@
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 
-from data_provider_protocols import ProviderT, IDataProvider
+from data_provider import IDataProvider
+from data_provider_type import ProviderT
 from formatting import msg_error
+from user_settings import DataProviderConfig
 
 
 def confirmation_markup(cb_data_confirmed: str, cb_data_canceled: str) -> InlineKeyboardMarkup:
@@ -85,26 +87,31 @@ async def _running_without_providers(message: Message):
     )
 
 
-def _providers_settings(str_type_value: str, prov_name: str) -> dict:
-    match str_type_value:
+def _providers_settings2(prov_t_value: str, prov_conf: DataProviderConfig) -> dict:
+    match prov_t_value:
         case ProviderT.UNIVERSAL:
             return {
-                "provider_stock_market": prov_name,
-                "provider_currency": prov_name,
-                "provider_crypto": prov_name
+                "provider_stock_market": prov_conf.dict(),
+                "provider_currency": prov_conf.dict(),
+                "provider_crypto": prov_conf.dict()
             }
-
         case ProviderT.CURR_CRYPTO:
             return {
-                "provider_crypto": prov_name
+                "provider_stock_market": None,
+                "provider_currency": None,
+                "provider_crypto": prov_conf.dict()
             }
 
         case ProviderT.CURR_FOREX:
             return {
-                "provider_currency": prov_name,
+                "provider_stock_market": None,
+                "provider_currency": prov_conf.dict(),
+                "provider_crypto": None
             }
 
         case ProviderT.STOCK_MARKET:
             return {
-                "provider_stock_market": prov_name,
+                "provider_stock_market": prov_conf.dict(),
+                "provider_currency": None,
+                "provider_crypto": None
             }

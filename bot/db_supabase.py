@@ -2,12 +2,11 @@ from typing import final
 
 from loguru import logger
 from postgrest import APIResponse, APIError
-from returns.result import Result, Success, Failure
 from supabase import Client as SbClient
 
-from db import IDatabase, IDatabaseError
-from db_helpers import res_to_user, res_to_instrument
-from models import UserEntity, InstrumentType, InstrumentEntity
+from database import IDatabase
+from db_errors import IDatabaseError
+from models import InstrumentType
 
 
 @final
@@ -16,26 +15,11 @@ class SupabaseDbError(IDatabaseError):
 
 
 def _expected_exactly_one(resp: APIResponse) -> dict:
-    if len(resp.data) == 0:
-        raise SupabaseDbError("Query is empty")
-
     if len(resp.data) == 1:
         return resp.data[0]
 
-    if len(resp.data) > 0:
-        logger.trace("<supabase> data integrity error")
-        raise SupabaseDbError(
-            "Query expected to return exactly one result,"
-            " but returned multiple rows"
-        )
-
-
-def _expected_exactly_one_res(resp: APIResponse) -> Result[dict, any]:
     if len(resp.data) == 0:
-        return Failure("Query is empty")
-
-    if len(resp.data) == 1:
-        return Success(resp.data[0])
+        raise SupabaseDbError("Query is empty")
 
     if len(resp.data) > 0:
         logger.trace("<supabase> data integrity error")
@@ -46,6 +30,9 @@ def _expected_exactly_one_res(resp: APIResponse) -> Result[dict, any]:
 
 
 class SupabaseDB(IDatabase):
+    def find_tracking_with(self, fields: dict) -> dict:
+        raise NotImplementedError
+
     def __init__(self, url: str, key: str):
         self.sb_client: SbClient = SbClient(
             supabase_url=url,
@@ -66,67 +53,59 @@ class SupabaseDB(IDatabase):
 
         return resp
 
-    def find_user_by_fields(self, fields: dict) -> dict:
+    def user_with(self, fields: dict) -> list[dict]:
         query = self.sb_client.table("bot_users").select("*")
         for key, value in fields.items():
             query.eq(key, value)
 
         resp = query.execute()
-        return _expected_exactly_one_res(resp).unwrap()
+        return resp.data
 
-    def find_user_by_tg_id(self, tg_user_id: int) -> Result[UserEntity, any]:
+    def user_with_tg_id(self, tg_user_id: int) -> dict:
         resp = self.sb_client.table("bot_users").select("*").eq(
             "tg_user_id", tg_user_id
         ).execute()
 
-        found_user: Result = res_to_user(_expected_exactly_one_res(resp))
-        if isinstance(found_user, Failure):
-            logger.info(f"<supabase> User not found: {found_user.failure()}; 'tg_user_id': {tg_user_id}")
+        return _expected_exactly_one(resp)
 
-        return found_user
+    def settings_of_tg_id(self, tg_user_id: int) -> dict:
+        user = self.user_with_tg_id(tg_user_id)
+        return user["settings"]
 
-    def get_settings_of_user(self, tg_user_id: int) -> Result[dict, any]:
-        res = self.find_user_by_tg_id(tg_user_id)
-        if isinstance(res, Failure):
-            logger.error(f"<supabase> Error getting settings of user: '{tg_user_id}'")
-            return Failure(res.failure())
-
-        return Success(res.unwrap().settings)
-
-    def find_curr_pair(self, code_from: str, code_to: str, data_provider: str) -> Result[InstrumentEntity, any]:
+    def find_curr_pair(self, code_from: str, code_to: str, data_provider: str) -> dict:
         resp = self.__find_instrument_of_type(
             InstrumentType.curr_pair,
             f"{code_from}_{code_to}",
             data_provider
         )
 
-        return res_to_instrument(_expected_exactly_one_res(resp))
+        return _expected_exactly_one(resp)
 
-    def find_crypto_pair(self, code_from: str, code_to: str, data_provider: str) -> Result[InstrumentEntity, any]:
+    def find_crypto_pair(self, code_from: str, code_to: str, data_provider: str) -> dict:
         resp = self.__find_instrument_of_type(
             InstrumentType.crypto_pair,
             f"{code_from}_{code_to}",
             data_provider
         )
 
-        return res_to_instrument(_expected_exactly_one_res(resp))
+        return _expected_exactly_one(resp)
 
-    def find_stock_market_instrument(self, symbol: str, data_provider: str) -> Result[InstrumentEntity, any]:
+    def find_stock_market_instrument(self, symbol: str, data_provider: str) -> dict:
         resp = self.__find_instrument_of_type(
             InstrumentType.sm_instrument,
             symbol,
             data_provider
         )
 
-        return res_to_instrument(_expected_exactly_one_res(resp))
+        return _expected_exactly_one(resp)
 
-    def find_instrument_by_fields(self, fields: dict) -> Result[InstrumentEntity, any]:
+    def find_instrument_with(self, fields: dict) -> dict:
         raise NotImplementedError
 
     def find_tracking(self):
         raise NotImplementedError
 
-    def find_trackings_by_fields(self, fields: dict) -> list[dict[str, any]]:
+    def trackings_with(self, fields: dict) -> list[dict[str, any]]:
         query = self.sb_client.table("tracking").select("*")
         for key, value in fields.items():
             query.eq(key, value)
@@ -137,7 +116,7 @@ class SupabaseDB(IDatabase):
 
         return resp.data
 
-    def add_user_by_tg_id(self, tg_user_id: int):
+    def add_new_user(self, tg_user_id: int):
         try:
             resp = self.sb_client.table("bot_users").insert(
                 {"tg_user_id": tg_user_id}).execute()

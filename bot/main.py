@@ -8,7 +8,7 @@ import bot_handlers_on_msg as on_msg
 import config
 from app_container import AppContainer
 from bot_handlers_db_updates import on_instrument_update
-from db import IDatabase
+from database import IDatabase
 from db_listener_supabase import SupabaseListener
 from db_supabase import SupabaseDB
 from provider_alpha_vantage import AlphaVantageAPI
@@ -37,7 +37,7 @@ async def start_listener():
     await lis.set_up("fin_instruments")
     logger.info(f"<listener> socket and channel set up: {lis.ready_to_listen}")
 
-    c_for_updates = Client(
+    c_for_listener = Client(
         f"{BOT_SESSION_NAME}_upd-listener",
         api_id=config.TELEGRAM_API_ID,
         api_hash=config.TELEGRAM_API_HASH,
@@ -46,13 +46,13 @@ async def start_listener():
 
     lis.add_callback(
         "UPDATE", on_instrument_update,
-        tg_client=c_for_updates,
+        tg_client=c_for_listener,
         database=db
     )
 
-    await c_for_updates.start()
+    await c_for_listener.start()
     await asyncio.gather(lis.start_listening(), idle())
-    await c_for_updates.stop()
+    await c_for_listener.stop()
 
 
 async def start_main_bot():

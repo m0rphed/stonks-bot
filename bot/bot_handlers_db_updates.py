@@ -3,7 +3,8 @@ from typing import Any
 from loguru import logger
 from pyrogram import Client as PyrogramClient
 
-from db import IDatabase
+import db_helpers
+from database import IDatabase
 
 
 def _get_or_raise(the_kwargs: dict, key: str) -> Any:
@@ -21,13 +22,13 @@ async def on_instrument_update(payload: dict, **kwargs):
     instr_obj = payload["record"]
     tg_client: PyrogramClient = _get_or_raise(kwargs, "tg_client")
     idb: IDatabase = _get_or_raise(kwargs, "database")
-    matched_tracking: list[dict] = idb.find_trackings_by_fields({"instrument": instr_obj["id"]})
+    matched_tracking: list[dict] = idb.trackings_with({"instrument": instr_obj["id"]})
     for trk in matched_tracking:
         db_user_id = trk["tracked_by"]
         logger.info(f"Inner db user id: {db_user_id}\n\t=> tracking: {trk}")
 
-        user = idb.find_user_by_fields({"id": db_user_id})
-        tg_user_id = user["tg_user_id"]
-        logger.info(f"telegram user id: {tg_user_id}\n\t=> of user: {user}")
+        user_obj = idb.user_with({"id": db_user_id})
+        user = db_helpers.to_user(user_obj)
+        logger.info(f"telegram user id: {user.tg_user_id}\n\t=> of user: {user.id}")
 
-        await tg_client.send_message(tg_user_id, f"current price: {instr_obj['price']}" + str(trk))
+        await tg_client.send_message(user.tg_user_id, f"current price: {instr_obj['price']}\n\n" + str(trk))

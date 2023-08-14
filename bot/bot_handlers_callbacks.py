@@ -6,7 +6,7 @@ from pyrogram.types import CallbackQuery
 
 import custom_filters as flt
 from app_container import AppContainer
-from bot_helpers import chose_provider_markup, _providers_settings
+from bot_helpers import chose_provider_markup
 from formatting import msg_error, msg_ok
 
 

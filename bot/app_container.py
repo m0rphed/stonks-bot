@@ -1,12 +1,12 @@
 from dataclasses import dataclass
 
-from data_provider import by_name, filter_by_class
-from data_provider_protocols import (
+from data_provider_helpers import by_name, filter_by_class
+from data_provider import (
     IDataProvider,
     IProviderStockMarket,
     IAsyncProviderStockMarket
 )
-from db import IDatabase
+from database import IDatabase
 
 
 @dataclass(frozen=True)

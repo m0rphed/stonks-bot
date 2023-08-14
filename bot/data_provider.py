@@ -1,45 +1,82 @@
-from data_provider_protocols import IDataProvider, ProviderT
+from abc import abstractmethod
+from typing import Protocol, runtime_checkable
+
+from models import ExchangePair, StockMarketInstrument, SearchQueryRes
+from data_provider_type import ProviderT
 
 
-def by_name(providers: list[IDataProvider], name: str) -> IDataProvider:
-    for prov in providers:
-        if prov.provider_name == name:
-            return prov
-        raise RuntimeError(f"No data providers with name {name}' found")
+# Base protocol for data providers
+@runtime_checkable
+class IDataProvider(Protocol):
+    @property
+    @abstractmethod
+    def provider_type(self) -> ProviderT:
+        ...
+
+    @property
+    @abstractmethod
+    def provider_name(self) -> str:
+        ...
 
 
-def filter_by_type(providers: list[IDataProvider], prov_type: ProviderT) -> list:
-    res = [
-        prov for prov in providers
-        if prov.provider_type == prov_type
-    ]
-
-    return res
+# Various types of data providers: use this to implement any kind of data providers
+#   Such as: API, databases, any kind of libraries / packages
+#   - IProviderStockMarket
+#   - IProviderCurrEx
+#   - IProviderCryptoEx
 
 
-def filter_by_class(providers: list[IDataProvider], prov_class) -> list:
-    filtered = []
-    for prov in providers:
-        if isinstance(prov, prov_class):
-            filtered.append(prov)
+@runtime_checkable
+class IProviderStockMarket(IDataProvider, Protocol):
+    @abstractmethod
+    def search_stock_market(self, query: str) -> list[SearchQueryRes]:
+        ...
 
-    return filtered
+    @abstractmethod
+    def get_security_by_ticker(self, ticker: str) -> StockMarketInstrument:
+        ...
 
 
-if __name__ == "__main__":
-    from provider_alpha_vantage import AlphaVantageAPI
+@runtime_checkable
+class IProviderCurrEx(IDataProvider, Protocol):
+    @abstractmethod
+    def get_curr_pair(self, symbol_from: str, symbol_to: str) -> ExchangePair:
+        ...
 
-    xs = [
-        AlphaVantageAPI("fake_key_01"),
-        AlphaVantageAPI("fake_key_02"),
-        AlphaVantageAPI("fake_key_03"),
-        AlphaVantageAPI("fake_key_04")
-    ]
 
-    flt = filter_by_type(xs, ProviderT.UNIVERSAL)
-    assert len(flt), len(xs)
+@runtime_checkable
+class IProviderCryptoEx(IDataProvider, Protocol):
+    @abstractmethod
+    def get_crypto_pair(self, symbol_from: str, symbol_to: str) -> ExchangePair:
+        ...
 
-    flt = filter_by_class([AlphaVantageAPI("fake_key")], IDataProvider)
-    assert len(flt), 1
 
-    print("all tests passed")
+# Async protocols:
+#   - IAsyncProviderStockMarket -- async methods for getting stock market prices
+#   - IAsyncProviderCurrEx      -- async methods for getting currency exchange rates
+#   - IAsyncProviderCryptoEx    -- async methods for getting cryptocurrency exchange rates
+
+
+@runtime_checkable
+class IAsyncProviderStockMarket(IDataProvider, Protocol):
+    @abstractmethod
+    async def search_stock_market(self, query: str) -> list[SearchQueryRes]:
+        ...
+
+    @abstractmethod
+    async def get_security_by_ticker(self, ticker: str) -> StockMarketInstrument:
+        ...
+
+
+@runtime_checkable
+class IAsyncProviderCurrEx(IDataProvider, Protocol):
+    @abstractmethod
+    async def get_curr_pair(self, symbol_from: str, symbol_to: str) -> ExchangePair:
+        ...
+
+
+@runtime_checkable
+class IAsyncProviderCryptoEx(IDataProvider, Protocol):
+    @abstractmethod
+    async def get_crypto_pair(self, symbol_from: str, symbol_to: str) -> ExchangePair:
+        ...

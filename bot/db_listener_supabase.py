@@ -5,7 +5,7 @@ from loguru import logger
 from realtime.channel import Channel
 from realtime.connection import Socket
 
-from db_listener import IDatabaseListener
+from database_listener import IDatabaseListener
 
 
 @final
@@ -34,6 +34,7 @@ class SupabaseListener(IDatabaseListener):
                 " channels not set; set_up' method first"
             )
 
+        # TODO: which "asyncio approach" is more appropriate in this case?
         # loop = asyncio.get_running_loop()
         # loop.create_task(self.soc._listen())
         # loop.create_task(self.soc._keep_alive())

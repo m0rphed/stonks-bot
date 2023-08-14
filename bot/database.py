@@ -1,55 +1,55 @@
 from abc import abstractmethod
 from typing import Protocol, runtime_checkable
 
-from returns.result import Result
-
-from models import UserEntity, InstrumentEntity, TrackingEntity
-
-
-class IDatabaseError(Exception):
-    pass
-
 
 @runtime_checkable
 class IDatabase(Protocol):
     @abstractmethod
-    def find_user_by_fields(self, fields: dict) -> dict:
+    def user_with(self, fields: dict) -> list[dict]:
+        """Get user from 'bot_users' table with matching fields;
+        """
         ...
 
     @abstractmethod
-    def find_user_by_tg_id(self, tg_user_id: int) -> Result[UserEntity, any]:
+    def user_with_tg_id(self, tg_user_id: int) -> dict:
+        """Get user from 'bot_users' table with matching 'tg_user_id' field;
+        Expected exactly one user
+        """
         ...
 
     @abstractmethod
-    def get_settings_of_user(self, tg_user_id: int) -> Result[dict, any]:
+    def settings_of_tg_id(self, tg_user_id: int) -> dict:
+        """Get settings (JSON object) of the user with matching 'tg_user_id' field;
+        Expected exactly one user = exactly one user settings JSON
+        """
         ...
 
     @abstractmethod
-    def find_curr_pair(self, code_from: str, code_to: str, data_provider: str) -> Result[InstrumentEntity, any]:
+    def find_curr_pair(self, code_from: str, code_to: str, data_provider: str) -> dict:
         ...
 
     @abstractmethod
-    def find_crypto_pair(self, code_from: str, code_to: str, data_provider: str) -> Result[InstrumentEntity, any]:
+    def find_crypto_pair(self, code_from: str, code_to: str, data_provider: str) -> dict:
         ...
 
     @abstractmethod
-    def find_stock_market_instrument(self, symbol: str, data_provider: str) -> Result[InstrumentEntity, any]:
+    def find_stock_market_instrument(self, symbol: str, data_provider: str) -> dict:
         ...
 
     @abstractmethod
-    def find_instrument_by_fields(self, fields: dict) -> Result[InstrumentEntity, any]:
+    def find_instrument_with(self, fields: dict) -> dict:
         ...
 
     @abstractmethod
-    def find_tracking(self) -> Result[TrackingEntity, any]:
+    def find_tracking_with(self, fields: dict) -> dict:
         ...
 
     @abstractmethod
-    def find_trackings_by_fields(self, fields: dict) -> list[dict]:
+    def trackings_with(self, fields: dict) -> list[dict]:
         ...
 
     @abstractmethod
-    def add_user_by_tg_id(self, tg_user_id: int):
+    def add_new_user(self, tg_user_id: int):
         ...
 
     @abstractmethod

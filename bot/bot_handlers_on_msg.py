@@ -1,4 +1,5 @@
 from functools import partial
+from typing import Any
 
 from pyrogram import Client, enums, filters
 from pyrogram.handlers import MessageHandler
@@ -7,7 +8,7 @@ from pyrogram.types import (
     InlineKeyboardMarkup,
     InlineKeyboardButton
 )
-from returns.result import Failure, Success
+from returns.result import Failure, Success, Result
 
 from app_container import AppContainer
 from bot_helpers import (
@@ -15,7 +16,8 @@ from bot_helpers import (
     cancel_btn,
     _running_without_providers
 )
-from db_helpers import res_to_instrument
+from db_helpers import res_to_instrument, try_get_user_by_id, try_get_settings_of_user, ensure_awaited
+from db_errors import IDatabaseError
 from formatting import (
     msg_error,
     msg_warning,
@@ -28,19 +30,27 @@ from models import (
     InstrumentType,
     InstrumentEntity
 )
+from user_settings import UserSettings
 
 
 async def cmd_delete_me(_client: Client, message: Message, app: AppContainer):
-    found_user = app.database.find_user_by_tg_id(message.from_user.id)
+    found_user: Result[dict, Any] = try_get_user_by_id(
+        app.database,
+        message.from_user.id
+    )
+
+    # if no user was found - reply with error message;
+    # -then exit right away
     if isinstance(found_user, Failure):
         await message.reply(
             msg_error(
-                "Could not delete user: not signed in"
+                "Could not delete user: user not found"
                 "\n👉 try `/sign_in_tg`"
             )
         )
         return
 
+    # if user exist - we should prepare confirmation markup
     confirmation = confirmation_markup(
         "confirmed --cmd delete_me",
         "canceled --cmd delete_me"
@@ -54,8 +64,15 @@ async def cmd_delete_me(_client: Client, message: Message, app: AppContainer):
 
 
 async def cmd_settings(_client: Client, message: Message, app: AppContainer):
-    user_settings = app.database.get_settings_of_user(message.from_user.id)
-    if isinstance(user_settings, Failure):
+    found_settings: Result[UserSettings, Any] = try_get_settings_of_user(
+        app.database,
+        message.from_user.id
+    )
+    # TODO: by default we notify the user
+    #  that if there something wrong - it probably because
+    #   user was not found, but it actually could be internal error
+    #   which we do not handle -> handle these types of errors
+    if isinstance(found_settings, Failure):
         await message.reply(
             msg_error(
                 "Failed to retrieve settings: user not found"
@@ -64,17 +81,17 @@ async def cmd_settings(_client: Client, message: Message, app: AppContainer):
         )
         return
 
-    # TODO: if settings None
-    #   -> force user to set providers for each type
-    #   = list all data providers with type = we need a builder for reply markup
-    if user_settings.unwrap() is None:
+    settings: UserSettings = found_settings.unwrap()
+    # TODO: maybe we need to list all data providers with type -> use reply markup builder
+    if settings.is_all_providers_null() is None:
         await message.reply(
             "Settings: wow, such *empty* 🐶"
-            "\n\nYou need to configure data providers for stock market"
+            "\n\nConsider configuring data providers"
+            " for stock market, currency exchanges etc."
         )
         return
 
-    await message.reply(f"Setting is {user_settings.unwrap()}")
+    await message.reply(settings.to_markdown())
 
 
 async def cmd_set_providers(_client: Client, message: Message, app: AppContainer):
@@ -115,8 +132,9 @@ async def cmd_providers(_client: Client, message: Message, app: AppContainer):
 
 
 async def cmd_sign_in_tg(_client: Client, message: Message, app: AppContainer):
-    tg_id = message.from_user.id
-    match app.database.find_user_by_tg_id(tg_id):
+    _id = message.from_user.id
+
+    match try_get_user_by_id(app.database, _id):
         case Success(_):
             await message.reply(
                 msg_ok(
@@ -124,8 +142,8 @@ async def cmd_sign_in_tg(_client: Client, message: Message, app: AppContainer):
                 )
             )
 
-        case Failure(_):
-            user_added = app.database.add_user_by_tg_id(tg_id)
+        case Failure(_err):
+            user_added = app.database.add_new_user(_id)
 
             if user_added is None:
                 await message.reply(
@@ -144,7 +162,7 @@ async def cmd_sign_in_tg(_client: Client, message: Message, app: AppContainer):
 
             await message.reply(
                 msg_warning(
-                    "You should choose providers of market data!"
+                    "You should choose providers of stock market & currencies rates data!"
                     "\n👉 use `/settings` command to set up providers"
                 )
             )
@@ -162,31 +180,44 @@ async def cmd_search_stock_market(_client: Client, message: Message, app: AppCon
         )
         return
 
-    res = app.database.get_settings_of_user(message.from_user.id)
+    res: Result[UserSettings, Any] = try_get_settings_of_user(app.database, message.from_user.id)
     match res:
-        case Failure("Query is empty"):
-            await message.reply(msg_error("You are not signed in"))
+        case Failure(err) if isinstance(err, IDatabaseError) and str(err) == "Query is empty":
+            await message.reply(
+                msg_error(
+                    "You are not authenticated:\n"
+                    "➜ Could not retrieve providers settings"
+                )
+            )
             return
 
-        case Failure(wtf):
-            raise RuntimeError(f"Internal bot error: {wtf}")
+        case Failure(unexpected_err):
+            # TODO: implement more case for different errors
+            raise RuntimeError(f"Internal bot error: {unexpected_err}")
 
-        case Success(settings):
-            if settings is None:
+        case Success(settings) if isinstance(settings, UserSettings):
+            if settings.is_all_providers_null() or settings.provider_stock_market is None:
                 await message.reply(
                     msg_error(
-                        "Settings not set"
-                        "\n\nYou need to configure data"
-                        " providers for stock market in settings"
-                    )
+                        "Needed provider is not set"
+                        "\n\nYou need to set --stock market "
+                        "data provider-- in settings"
+                    ),
+                    parse_mode=enums.ParseMode.MARKDOWN
                 )
                 return
 
-            prov_name: str = settings["provider_stock_market"]
-            prov = app.get_prov_stock_market(prov_name)
+            # TODO: handle case when specified provider
+            #  is not available or provider name was simply set incorrectly
+            sm_prov = app.get_prov_stock_market(
+                settings.provider_stock_market.name
+            )
 
             # retrieve available stocks, bond, currencies
-            search_res: list[SearchQueryRes] | None = await prov.search_stock_market(search_query)
+            search_res: list[SearchQueryRes] | None = ensure_awaited(
+                sm_prov.search_stock_market,
+                search_query
+            )
 
             if search_res is None or search_res == []:
                 await message.reply(
@@ -212,82 +243,89 @@ async def cmd_track_stock(_client: Client, message: Message, app: AppContainer):
             msg_error(
                 "`track_stock`: incorrect arguments"
                 "\nProvide exactly two arguments separated by space:"
-                "\n - ticker: `AAPL`, etc "
-                "\n - price: `231`, `159.5`, etc (value in currency of exchange)"
-                "\nExample of full command: `/track_by_ticker SBER.ME 138.5`"
+                "\n • ticker: `AAPL`, etc "
+                "\n • price: `231`, `159.5`, etc (value in currency of exchange)"
+                "\n\nExample of full command: `/track_by_ticker SBER.ME 138.5`"
             )
         )
         return
 
     ticker, price = args
-
-    user_id: int = message.from_user.id
-    user_res = app.database.find_user_by_tg_id(user_id)
-    if isinstance(user_res, Failure) or user_res is None:
-        await message.reply(
-            msg_error(
-                "Error: user not found"
-                "\n\n👉 try `/sign_in_tg`"
-            )
-        )
-        return
-
-    user_settings: dict = user_res.unwrap().settings
-    if user_settings is None:
-        await message.reply(
-            msg_error(
-                "Error: user's settings not defined"
-                "\n\n👉 try `/set_providers`"
-            )
-        )
-        return
-
-    if "provider_stock_market" not in user_settings.keys():
-        await message.reply(
-            msg_error(
-                "Error: stock market data provider not set"
-                "\n\n👉 try `/settings` or `/set_providers`"
-            )
-        )
-        return
-
-    prov_name = user_settings["provider_stock_market"]
-    prov = app.get_prov_stock_market(prov_name)
-    security = await prov.get_security_by_ticker(ticker=ticker)
-
-    instr_res = app.database.find_stock_market_instrument(
-        security.symbol,
-        security.data_provider
+    # TODO: rewrite to result returning functions
+    res: Result[UserSettings, Any] = try_get_settings_of_user(
+        app.database,
+        message.from_user.id
     )
 
-    if isinstance(instr_res, Success):
-        tracking_obj = create_tracking_obj(
-            user=user_res.unwrap(),
-            instrument=instr_res.unwrap(),
-            on_price=price,
-        )
-        _ = app.database.add_tracking(tracking_obj)
-        await message.reply(msg_ok("Added for tracking"))
-        return
+    match res:
+        case Failure(err) if isinstance(err, IDatabaseError) and str(err) == "Query is empty":
+            await message.reply(
+                msg_error(
+                    "Error: user not found"
+                    "\n\n👉 try `/sign_in_tg`"
+                )
+            )
 
-    else:
-        instr: InstrumentEntity = res_to_instrument(Success(app.database.add_instrument(
-            {
-                "symbol": ticker,
-                "price": security.price,
-                "data_provider_code": security.data_provider,
-                "type": InstrumentType.sm_instrument.value
-            }
-        ))).unwrap()
+        case Failure(unexpected_error):
+            await message.reply(
+                msg_error(
+                    "Error: unexpected error"
+                    f" occurred:\n{unexpected_error}"
+                )
+            )
 
-        tracking_obj = create_tracking_obj(
-            user=user_res.unwrap(),
-            instrument=instr,
-            on_price=price,
-        )
-        _ = app.database.add_tracking(tracking_obj)
-        await message.reply(msg_ok("Added for tracking"))
-        return
+        case Success(settings) if isinstance(settings, UserSettings):
+            if settings.is_all_providers_null() and settings.provider_stock_market is None:
+                await message.reply(
+                    msg_error(
+                        "Error: provider for --stock market data-- was not set"
+                        "\n\n👉 try `/settings` or `/set_providers`"
+                    ),
+                    parse_mode=enums.ParseMode.MARKDOWN
+                )
+                return
+
+            # TODO: handle case when specified provider
+            #  is not available or provider name was simply set incorrectly
+            sm_prov = app.get_prov_stock_market(
+                settings.provider_stock_market.name
+            )
+
+            security = ensure_awaited(sm_prov.get_security_by_ticker, ticker)
+            # TODO: rewrite to result-returning functions
+            instr_res = app.database.find_stock_market_instrument(
+                security.symbol,
+                security.data_provider
+            )
+
+            if isinstance(instr_res, Success):
+                tracking_obj = create_tracking_obj(
+                    user=settings.unwrap(),
+                    instrument=instr_res.unwrap(),
+                    on_price=price,
+                )
+                _ = app.database.add_tracking(tracking_obj)
+                await message.reply(msg_ok("Added for tracking"))
+                return
+
+            else:
+                instr: InstrumentEntity = res_to_instrument(Success(app.database.add_instrument(
+                    {
+                        "symbol": ticker,
+                        "price": security.price,
+                        "data_provider_code": security.data_provider,
+                        "type": InstrumentType.sm_instrument.value
+                    }
+                ))).unwrap()
+
+                tracking_obj = create_tracking_obj(
+                    user=settings.unwrap(),
+                    instrument=instr,
+                    on_price=price,
+                )
+                _ = app.database.add_tracking(tracking_obj)
+                await message.reply(msg_ok("Added for tracking"))
+                return
 
 
 def get_commands(x: AppContainer) -> list[MessageHandler]:
