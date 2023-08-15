@@ -16,8 +16,8 @@ from bot_helpers import (
     cancel_btn,
     _running_without_providers
 )
-from db.helpers import res_to_instrument, try_get_user_by_id, try_get_settings_of_user, ensure_awaited
-from db.errors import DbError
+from database.helpers import res_to_instrument, try_get_user_by_id, try_get_settings_of_user, ensure_awaited
+from database.errors import DbError
 from formatting import (
     msg_error,
     msg_warning,

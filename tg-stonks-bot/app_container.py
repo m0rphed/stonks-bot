@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from data_provider import IDataProvider, IDataProviderStockMarket
 from data_provider_helpers import by_name, filter_by_implementation
-from db.idatabase import IDatabase
+from database.protocol import IDatabase
 
 
 @dataclass(frozen=True)

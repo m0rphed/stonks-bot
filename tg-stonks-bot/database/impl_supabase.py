@@ -4,8 +4,8 @@ from loguru import logger
 from postgrest import APIResponse, APIError
 from supabase import Client as SbClient
 
-from .idatabase import IDatabase
-from errors import DbError
+from .protocol import IDatabase
+from .errors import DbError
 from models import InstrumentType
 
 

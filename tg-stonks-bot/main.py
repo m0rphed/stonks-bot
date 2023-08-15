@@ -8,9 +8,9 @@ import bot_handlers_on_msg as on_msg
 import config
 from app_container import AppContainer
 from bot_handlers_db_updates import on_instrument_update
-from db.idatabase import IDatabase
+from database.protocol import IDatabase
 from db_listener_supabase import SupabaseListener
-from db.supabase import SupabaseDB
+from database.impl_supabase import SupabaseDB
 from provider_alpha_vantage import AlphaVantageAPI
 
 BOT_SESSION_NAME = "stonks-tg-stonks-bot"

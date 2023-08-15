@@ -47,7 +47,7 @@ async def cancellation_cb_handler(_client: Client, query: CallbackQuery, app: Ap
 async def confirmed_delete_me(_client: Client, query: CallbackQuery, app: AppContainer):
     if app.database.delete_user_by_tg_id(query.from_user.id) is None:
         await query.answer(
-            msg_error("Failed to delete user: db error")
+            msg_error("Failed to delete user: database error")
         )
         await query.message.delete()
         return

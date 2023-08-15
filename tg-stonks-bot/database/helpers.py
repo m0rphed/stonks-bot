@@ -5,12 +5,24 @@ from returns.result import Success, Result, safe
 
 from models import UserEntity, InstrumentEntity, TrackingEntity
 from user_settings import DataProviderConfig, UserSettings
-from .idatabase import IDatabase
+from .protocol import IDatabase
 
 
 def to_user(user_obj: dict) -> UserEntity:
     return UserEntity.parse_obj(
         user_obj
+    )
+
+
+def to_instrument(instrument_obj: dict) -> InstrumentEntity:
+    return InstrumentEntity.parse_obj(
+        instrument_obj
+    )
+
+
+def to_tracking(tracking_obj: dict) -> TrackingEntity:
+    return TrackingEntity.parse_obj(
+        tracking_obj
     )
 
 
@@ -21,23 +33,11 @@ def res_to_user(res: Result[dict, Any]) -> Result:
     return res
 
 
-def to_instrument(instrument_obj: dict) -> InstrumentEntity:
-    return InstrumentEntity.parse_obj(
-        instrument_obj
-    )
-
-
 def res_to_instrument(res: Result[dict, Any]) -> Result:
     if isinstance(res, Success):
         parsed_instrument = InstrumentEntity.parse_obj(res.unwrap())
         return Success(parsed_instrument)
     return res
-
-
-def to_tracking(tracking_obj: dict) -> TrackingEntity:
-    return TrackingEntity.parse_obj(
-        tracking_obj
-    )
 
 
 def res_to_tracking(res: Result[dict, Any]) -> Result:
@@ -88,15 +88,3 @@ def ensure_awaited(
         return loop.run_until_complete(func(*func_args, **func_kwargs))
     else:
         return func(*func_args, **func_kwargs)
-
-
-if __name__ == "__main__":
-    from supabase import SupabaseDB
-    import config
-
-    sb = SupabaseDB(
-        url=config.SUPABASE_URL,
-        key=config.SUPABASE_KEY
-    )
-    x = try_get_settings_of_user(sb, 963079375)
-    print(x.unwrap().is_all_providers_null())
