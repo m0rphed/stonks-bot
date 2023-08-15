@@ -3,9 +3,9 @@ from typing import Callable, Any
 
 from returns.result import Success, Result, safe
 
-from database import IDatabase
 from models import UserEntity, InstrumentEntity, TrackingEntity
 from user_settings import DataProviderConfig, UserSettings
+from .idatabase import IDatabase
 
 
 def to_user(user_obj: dict) -> UserEntity:
@@ -91,7 +91,7 @@ def ensure_awaited(
 
 
 if __name__ == "__main__":
-    from db_supabase import SupabaseDB
+    from supabase import SupabaseDB
     import config
 
     sb = SupabaseDB(

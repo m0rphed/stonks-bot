@@ -16,8 +16,8 @@ from bot_helpers import (
     cancel_btn,
     _running_without_providers
 )
-from db_helpers import res_to_instrument, try_get_user_by_id, try_get_settings_of_user, ensure_awaited
-from db_errors import IDatabaseError
+from db.helpers import res_to_instrument, try_get_user_by_id, try_get_settings_of_user, ensure_awaited
+from db.errors import DbError
 from formatting import (
     msg_error,
     msg_warning,
@@ -182,7 +182,7 @@ async def cmd_search_stock_market(_client: Client, message: Message, app: AppCon
 
     res: Result[UserSettings, Any] = try_get_settings_of_user(app.database, message.from_user.id)
     match res:
-        case Failure(err) if isinstance(err, IDatabaseError) and str(err) == "Query is empty":
+        case Failure(err) if isinstance(err, DbError) and str(err) == "Query is empty":
             await message.reply(
                 msg_error(
                     "You are not authenticated:\n"
@@ -209,7 +209,7 @@ async def cmd_search_stock_market(_client: Client, message: Message, app: AppCon
 
             # TODO: handle case when specified provider
             #  is not available or provider name was simply set incorrectly
-            sm_prov = app.get_prov_stock_market(
+            sm_prov = app.stock_market_provider_by_name(
                 settings.provider_stock_market.name
             )
 
@@ -258,7 +258,7 @@ async def cmd_track_stock(_client: Client, message: Message, app: AppContainer):
     )
 
     match res:
-        case Failure(err) if isinstance(err, IDatabaseError) and str(err) == "Query is empty":
+        case Failure(err) if isinstance(err, DbError) and str(err) == "Query is empty":
             await message.reply(
                 msg_error(
                     "Error: user not found"
@@ -287,7 +287,7 @@ async def cmd_track_stock(_client: Client, message: Message, app: AppContainer):
 
             # TODO: handle case when specified provider
             #  is not available or provider name was simply set incorrectly
-            sm_prov = app.get_prov_stock_market(
+            sm_prov = app.stock_market_provider_by_name(
                 settings.provider_stock_market.name
             )
 

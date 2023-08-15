@@ -1,8 +1,8 @@
 from abc import abstractmethod
 from typing import Protocol, runtime_checkable
 
-from models import ExchangePair, StockMarketInstrument, SearchQueryRes
 from data_provider_type import ProviderT
+from models import ExchangePair, StockMarketInstrument, SearchQueryRes
 
 
 # Base protocol for data providers
@@ -21,13 +21,13 @@ class IDataProvider(Protocol):
 
 # Various types of data providers: use this to implement any kind of data providers
 #   Such as: API, databases, any kind of libraries / packages
-#   - IProviderStockMarket
-#   - IProviderCurrEx
-#   - IProviderCryptoEx
+#   - IProviderStockMarket  -- methods for getting stock market prices
+#   - IProviderCurrEx       -- async methods for getting currency exchange rates
+#   - IProviderCryptoEx     -- async methods for getting cryptocurrency exchange rates
 
 
 @runtime_checkable
-class IProviderStockMarket(IDataProvider, Protocol):
+class IDataProviderStockMarket(IDataProvider, Protocol):
     @abstractmethod
     def search_stock_market(self, query: str) -> list[SearchQueryRes]:
         ...
@@ -38,45 +38,14 @@ class IProviderStockMarket(IDataProvider, Protocol):
 
 
 @runtime_checkable
-class IProviderCurrEx(IDataProvider, Protocol):
+class IDataProviderCurrencyEx(IDataProvider, Protocol):
     @abstractmethod
     def get_curr_pair(self, symbol_from: str, symbol_to: str) -> ExchangePair:
         ...
 
 
 @runtime_checkable
-class IProviderCryptoEx(IDataProvider, Protocol):
+class IDataProviderCryptoEx(IDataProvider, Protocol):
     @abstractmethod
     def get_crypto_pair(self, symbol_from: str, symbol_to: str) -> ExchangePair:
-        ...
-
-
-# Async protocols:
-#   - IAsyncProviderStockMarket -- async methods for getting stock market prices
-#   - IAsyncProviderCurrEx      -- async methods for getting currency exchange rates
-#   - IAsyncProviderCryptoEx    -- async methods for getting cryptocurrency exchange rates
-
-
-@runtime_checkable
-class IAsyncProviderStockMarket(IDataProvider, Protocol):
-    @abstractmethod
-    async def search_stock_market(self, query: str) -> list[SearchQueryRes]:
-        ...
-
-    @abstractmethod
-    async def get_security_by_ticker(self, ticker: str) -> StockMarketInstrument:
-        ...
-
-
-@runtime_checkable
-class IAsyncProviderCurrEx(IDataProvider, Protocol):
-    @abstractmethod
-    async def get_curr_pair(self, symbol_from: str, symbol_to: str) -> ExchangePair:
-        ...
-
-
-@runtime_checkable
-class IAsyncProviderCryptoEx(IDataProvider, Protocol):
-    @abstractmethod
-    async def get_crypto_pair(self, symbol_from: str, symbol_to: str) -> ExchangePair:
         ...

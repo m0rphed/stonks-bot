@@ -5,11 +5,13 @@ from alpha_vantage.async_support.foreignexchange import ForeignExchange as Forei
 from alpha_vantage.async_support.timeseries import TimeSeries as TimeSeriesAsync
 
 from api_client_middleware import ApiClientMiddleware
+
 from data_provider import (
-    IAsyncProviderStockMarket,
-    IAsyncProviderCurrEx,
-    IAsyncProviderCryptoEx
+    IDataProviderStockMarket,
+    IDataProviderCurrencyEx,
+    IDataProviderCryptoEx
 )
+
 from data_provider_type import ProviderT
 from models_alpha_vantage import (
     StockMarketInstrumentAV,
@@ -37,7 +39,7 @@ class ClientCryptoEx(ApiClientMiddleware):
 
 
 @final
-class AlphaVantageAPI(IAsyncProviderStockMarket, IAsyncProviderCurrEx, IAsyncProviderCryptoEx):
+class AlphaVantageAPI(IDataProviderStockMarket, IDataProviderCurrencyEx, IDataProviderCryptoEx):
     data_provider_name: str = "alpha_vantage"
 
     @property

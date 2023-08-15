@@ -1,2 +1,0 @@
-class IDatabaseError(Exception):
-    pass

@@ -4,13 +4,13 @@ from loguru import logger
 from postgrest import APIResponse, APIError
 from supabase import Client as SbClient
 
-from database import IDatabase
-from db_errors import IDatabaseError
+from .idatabase import IDatabase
+from errors import DbError
 from models import InstrumentType
 
 
 @final
-class SupabaseDbError(IDatabaseError):
+class SupabaseDbError(DbError):
     pass
 
 
@@ -175,9 +175,3 @@ class SupabaseDB(IDatabase):
         api_resp = self.sb_client.table("bot_users").update(fields).eq("tg_user_id", tg_user_id).execute()
         logger.info(f"User settings updated: {fields}")
         # raise NotImplementedError("Not finished")
-
-    def update_instrument(self):
-        raise NotImplementedError
-
-    def add_or_upd_instrument(self):
-        raise NotImplementedError

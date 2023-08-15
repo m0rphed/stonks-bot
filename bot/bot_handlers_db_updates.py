@@ -3,8 +3,8 @@ from typing import Any
 from loguru import logger
 from pyrogram import Client as PyrogramClient
 
-import db_helpers
-from database import IDatabase
+from db import helpers
+from db.idatabase import IDatabase
 
 
 def _get_or_raise(the_kwargs: dict, key: str) -> Any:

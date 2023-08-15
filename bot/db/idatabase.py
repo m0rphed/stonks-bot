@@ -7,19 +7,20 @@ class IDatabase(Protocol):
     @abstractmethod
     def user_with(self, fields: dict) -> list[dict]:
         """Get user from 'bot_users' table with matching fields;
+        Returns a list of users matching by specified fields
         """
         ...
 
     @abstractmethod
     def user_with_tg_id(self, tg_user_id: int) -> dict:
         """Get user from 'bot_users' table with matching 'tg_user_id' field;
-        Expected exactly one user
+        Expected exactly one user with matching 'tg_user_id'
         """
         ...
 
     @abstractmethod
     def settings_of_tg_id(self, tg_user_id: int) -> dict:
-        """Get settings (JSON object) of the user with matching 'tg_user_id' field;
+        """Get settings (user's settings stored in JSON) of the user with specified 'tg_user_id' field;
         Expected exactly one user = exactly one user settings JSON
         """
         ...

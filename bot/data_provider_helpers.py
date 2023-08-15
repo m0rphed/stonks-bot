@@ -18,7 +18,7 @@ def filter_by_type(providers: list[IDataProvider], prov_type: ProviderT) -> list
     return res
 
 
-def filter_by_class(providers: list[IDataProvider], prov_class) -> list:
+def filter_by_implementation(providers: list[IDataProvider], prov_class) -> list:
     filtered = []
     for prov in providers:
         if isinstance(prov, prov_class):
@@ -40,7 +40,7 @@ if __name__ == "__main__":
     flt = filter_by_type(xs, ProviderT.UNIVERSAL)
     assert len(flt), len(xs)
 
-    flt = filter_by_class([AlphaVantageAPI("fake_key")], IDataProvider)
+    flt = filter_by_implementation([AlphaVantageAPI("fake_key")], IDataProvider)
     assert len(flt), 1
 
     print("all tests passed")
