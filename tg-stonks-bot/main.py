@@ -13,7 +13,7 @@ from db_listener_supabase import SupabaseListener
 from db.supabase import SupabaseDB
 from provider_alpha_vantage import AlphaVantageAPI
 
-BOT_SESSION_NAME = "stonks-bot"
+BOT_SESSION_NAME = "stonks-tg-stonks-bot"
 
 db: IDatabase = SupabaseDB(
     url=config.SUPABASE_URL,

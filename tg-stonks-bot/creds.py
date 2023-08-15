@@ -1,24 +1,24 @@
 import os
 
 import dotenv
-import toml
-
-__DEFAULT_TOML_PATH: str = "./secret/keys.toml"
-
-
-def get_from_toml(key: str, toml_path: str = __DEFAULT_TOML_PATH) -> str | None:
-    # get the file path
-    file_path = os.path.join(toml_path)
-    if not os.path.exists(file_path):
-        raise FileNotFoundError(f"TOML file '{file_path}' not found.")
-
-    # read keys to memory
-    secrets = toml.load(file_path)
-    if key not in secrets:
-        raise ValueError(
-            f"'{key}' not found in the TOML file.")
-
-    return secrets[key]  # return specified secret key
+# import toml
+#
+# __DEFAULT_TOML_PATH: str = "./secret/keys.toml"
+#
+#
+# def get_from_toml(key: str, toml_path: str = __DEFAULT_TOML_PATH) -> str | None:
+#     # get the file path
+#     file_path = os.path.join(toml_path)
+#     if not os.path.exists(file_path):
+#         raise FileNotFoundError(f"TOML file '{file_path}' not found.")
+#
+#     # read keys to memory
+#     secrets = toml.load(file_path)
+#     if key not in secrets:
+#         raise ValueError(
+#             f"'{key}' not found in the TOML file.")
+#
+#     return secrets[key]  # return specified secret key
 
 
 def load_env_file(env_file_path: str) -> None:
