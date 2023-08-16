@@ -8,7 +8,10 @@ def load_env_file(env_file_path: str) -> None:
         raise ValueError("Trying to load `.env` file: got empty str as path")
 
     if not os.path.exists(env_file_path):
-        raise FileNotFoundError(f"`.env` file '{env_file_path}' not found.")
+        raise FileNotFoundError(
+            f"`.env` file: '{env_file_path}' not found."
+            f"\n\t-> current dir: {os.getcwd()}"
+        )
 
     dotenv.load_dotenv(dotenv_path=env_file_path)
 
