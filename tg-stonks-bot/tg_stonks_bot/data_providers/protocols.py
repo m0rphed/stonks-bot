@@ -1,8 +1,8 @@
 from abc import abstractmethod
 from typing import Protocol, runtime_checkable
 
-from data_provider_type import ProviderT
-from models import ExchangePair, StockMarketInstrument, SearchQueryRes
+from .provider_type import ProviderT
+from tg_stonks_bot.data_providers.models import ExchangePair, StockMarketInstrument, SearchQueryRes
 
 
 # Base protocol for data providers

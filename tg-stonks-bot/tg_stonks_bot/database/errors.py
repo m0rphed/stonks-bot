@@ -1,14 +1,18 @@
+from typing import final
+
+
 class DbError(Exception):
     """
     Database exception. Should only be raised when unspecified && unexpected error
     happened while working with the database.
 
     Also, all other exceptions related to the operation
-    of different DB implementations should inherit from this exception.
+    of any database should inherit from this exception.
     """
     pass
 
 
+@final
 class DbUserNotFound(DbError):
     """
     Should be raised when the user was not found in the table storing users
@@ -17,6 +21,7 @@ class DbUserNotFound(DbError):
     pass
 
 
+@final
 class DbInstrumentNotFound(DbError):
     """
     Should be raised when instrument was not found in the table storing
@@ -25,6 +30,7 @@ class DbInstrumentNotFound(DbError):
     pass
 
 
+@final
 class DbUserSettingsInvalid(DbError):
     """
     Should be raised when user settings violate the JSON settings schema,

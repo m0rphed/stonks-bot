@@ -3,9 +3,9 @@ from typing import Callable, Any
 
 from returns.result import Success, Result, safe
 
-from models import UserEntity, InstrumentEntity, TrackingEntity
-from user_settings import DataProviderConfig, UserSettings
-from .protocol import IDatabase
+from .entity_models import UserEntity, InstrumentEntity, TrackingEntity
+from tg_stonks_bot.database.user_settings import DataProviderConfig, UserSettings
+from .protocols import IDatabase
 
 
 def to_user(user_obj: dict) -> UserEntity:

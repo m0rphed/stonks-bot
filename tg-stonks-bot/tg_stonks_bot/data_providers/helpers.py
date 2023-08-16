@@ -1,5 +1,5 @@
-from data_provider import IDataProvider
-from data_provider_type import ProviderT
+from tg_stonks_bot.data_providers.protocols import IDataProvider
+from tg_stonks_bot.data_providers.provider_type import ProviderT
 
 
 def by_name(providers: list[IDataProvider], name: str) -> IDataProvider:
@@ -28,7 +28,7 @@ def filter_by_implementation(providers: list[IDataProvider], prov_class) -> list
 
 
 if __name__ == "__main__":
-    from provider_alpha_vantage import AlphaVantageAPI
+    from tg_stonks_bot.alpha_vantage_provider import AlphaVantageAPI
 
     xs = [
         AlphaVantageAPI("fake_key_01"),

@@ -21,7 +21,7 @@ class ApiClientMiddleware(ABC):
         if not self.initialized_safely:
             raise RuntimeError(
                 "You should only use this class via:"
-                f" `async with {self.__class__.__name__}(...) as <instance name>: ...`")
+                f" `async with {self.__class__.__name__}(...) as <alias name>: ...`")
 
     @property
     def client(self):

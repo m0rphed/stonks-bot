@@ -16,21 +16,22 @@ from bot_helpers import (
     cancel_btn,
     _running_without_providers
 )
-from database.helpers import res_to_instrument, try_get_user_by_id, try_get_settings_of_user, ensure_awaited
+from data_providers.models import SearchQueryRes
+from database.entity_models import InstrumentType, InstrumentEntity, create_tracking_obj
 from database.errors import DbError
+from database.helpers import (
+    res_to_instrument,
+    try_get_user_by_id,
+    try_get_settings_of_user,
+    ensure_awaited
+)
+from database.user_settings import UserSettings
 from formatting import (
     msg_error,
     msg_warning,
     msg_ok,
     msg_list_providers
 )
-from models import (
-    SearchQueryRes,
-    create_tracking_obj,
-    InstrumentType,
-    InstrumentEntity
-)
-from user_settings import UserSettings
 
 
 async def cmd_delete_me(_client: Client, message: Message, app: AppContainer):
@@ -330,11 +331,11 @@ async def cmd_track_stock(_client: Client, message: Message, app: AppContainer):
 
 def get_commands(x: AppContainer) -> list[MessageHandler]:
     return [
-        MessageHandler(partial(cmd_delete_me,           app=x), filters.command("delete_me")),
-        MessageHandler(partial(cmd_settings,            app=x), filters.command("settings")),
-        MessageHandler(partial(cmd_set_providers,       app=x), filters.command("set_providers")),
-        MessageHandler(partial(cmd_providers,           app=x), filters.command("providers")),
-        MessageHandler(partial(cmd_sign_in_tg,          app=x), filters.command("sign_in_tg")),
+        MessageHandler(partial(cmd_delete_me, app=x), filters.command("delete_me")),
+        MessageHandler(partial(cmd_settings, app=x), filters.command("settings")),
+        MessageHandler(partial(cmd_set_providers, app=x), filters.command("set_providers")),
+        MessageHandler(partial(cmd_providers, app=x), filters.command("providers")),
+        MessageHandler(partial(cmd_sign_in_tg, app=x), filters.command("sign_in_tg")),
         MessageHandler(partial(cmd_search_stock_market, app=x), filters.command("search_stock_market")),
-        MessageHandler(partial(cmd_track_stock,         app=x), filters.command("track_stock"))
+        MessageHandler(partial(cmd_track_stock, app=x), filters.command("track_stock"))
     ]

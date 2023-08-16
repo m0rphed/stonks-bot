@@ -4,16 +4,16 @@ from alpha_vantage.async_support.cryptocurrencies import CryptoCurrencies as Cry
 from alpha_vantage.async_support.foreignexchange import ForeignExchange as ForeignExchangeAsync
 from alpha_vantage.async_support.timeseries import TimeSeries as TimeSeriesAsync
 
-from api_client_middleware import ApiClientMiddleware
+from .data_providers.api_client_middleware import ApiClientMiddleware
 
-from data_provider import (
+from .data_providers.protocols import (
     IDataProviderStockMarket,
     IDataProviderCurrencyEx,
     IDataProviderCryptoEx
 )
 
-from data_provider_type import ProviderT
-from models_alpha_vantage import (
+from .data_providers.provider_type import ProviderT
+from tg_stonks_bot.alpha_vantage_models import (
     StockMarketInstrumentAV,
     SearchQueryResAV,
     ExchangePairAV

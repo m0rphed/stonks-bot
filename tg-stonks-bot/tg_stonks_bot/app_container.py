@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 
-from data_provider import IDataProvider, IDataProviderStockMarket
-from data_provider_helpers import by_name, filter_by_implementation
-from database.protocol import IDatabase
+from data_providers.helpers import by_name, filter_by_implementation
+from data_providers.protocols import IDataProvider, IDataProviderStockMarket
+from database.protocols import IDatabase
 
 
 @dataclass(frozen=True)

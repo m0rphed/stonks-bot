@@ -29,4 +29,3 @@ def get_from_env(key: str, env_file_path: str | None = None) -> str | None:
 if __name__ == "__main__":
     # TODO: write some tests
     print("maybe some tests here, huh?")
-    pass

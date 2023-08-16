@@ -1,9 +1,9 @@
 import datetime as dt
 from typing import Optional
 
-from pydantic import Field, validator
+from pydantic import Field, field_validator
 
-from models import StockMarketInstrument, SearchQueryRes, ExchangePair
+from .data_providers.models import StockMarketInstrument, SearchQueryRes, ExchangePair
 
 
 # noinspection DuplicatedCode
@@ -48,13 +48,13 @@ class ExchangePairAV(ExchangePair):
     price_bid: Optional[float | None]   = Field(alias="8. Bid Price")
     price_ask: Optional[float | None]   = Field(alias="9. Ask Price")
 
-    @validator('price_bid', pre=True)
+    @field_validator('price_bid', mode="before")
     def validate_price_bid(cls, value):
         if value == "-":
             return None
         return value
 
-    @validator('price_ask', pre=True)
+    @field_validator('price_ask', mode="before")
     def validate_price_ask(cls, value):
         if value == "-":
             return None

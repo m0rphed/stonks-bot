@@ -1,6 +1,6 @@
 import emoji
 
-from data_provider import IDataProvider
+from data_providers.protocols import IDataProvider
 
 
 def msg_warning(msg: str) -> str:

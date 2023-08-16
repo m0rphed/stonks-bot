@@ -2,7 +2,7 @@ from typing import Optional
 
 from pydantic import BaseModel, validator
 
-from data_provider_type import ProviderT
+from ..data_providers.provider_type import ProviderT
 
 
 class DataProviderConfig(BaseModel):
