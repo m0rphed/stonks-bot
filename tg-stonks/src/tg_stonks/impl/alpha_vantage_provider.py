@@ -59,7 +59,7 @@ class AlphaVantageAPI(IDataProviderStockMarket, IDataProviderCurrencyEx, IDataPr
             for res_dict in results:
                 res_dict["data_provider"] = self.data_provider_name
 
-            return [SearchQueryResAV.parse_obj(r) for r in results]
+            return [SearchQueryResAV.model_validate(r, strict=True) for r in results]
 
     async def get_security_by_ticker(self, ticker: str) -> StockMarketInstrumentAV:
         # init alpha-vantage client for stock market data
@@ -67,7 +67,7 @@ class AlphaVantageAPI(IDataProviderStockMarket, IDataProviderCurrencyEx, IDataPr
             # retrieve stock data by specified ticker symbol
             resp, _ = await ts.client.get_quote_endpoint(symbol=ticker)
             resp["data_provider"] = self.data_provider_name
-            instrument = StockMarketInstrumentAV.parse_obj(resp)
+            instrument = StockMarketInstrumentAV.model_validate(resp, strict=True)
             return instrument
 
     async def get_curr_pair(self, symbol_from: str, symbol_to: str) -> ExchangePairAV:
@@ -79,7 +79,7 @@ class AlphaVantageAPI(IDataProviderStockMarket, IDataProviderCurrencyEx, IDataPr
                 to_currency=symbol_to
             )
             resp["data_provider"] = self.data_provider_name
-            instrument = ExchangePairAV.parse_obj(resp)
+            instrument = ExchangePairAV.model_validate(resp, strict=True)
             return instrument
 
     async def get_crypto_pair(self, symbol_from: str, symbol_to: str) -> ExchangePairAV:
@@ -89,5 +89,5 @@ class AlphaVantageAPI(IDataProviderStockMarket, IDataProviderCurrencyEx, IDataPr
                 to_currency=symbol_to
             )
             resp["data_provider"] = self.data_provider_name
-            instrument = ExchangePairAV.parse_obj(resp)
+            instrument = ExchangePairAV.model_validate(resp, strict=True)
             return instrument
