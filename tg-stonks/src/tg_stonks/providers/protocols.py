@@ -25,31 +25,31 @@ class IDataProvider(Protocol):
 
 # Various types of data providers: use this to implement any kind of data providers
 #   Such as: API, databases, any kind of libraries / packages
-#   - IProviderStockMarket  -- methods for getting stock market prices
-#   - IProviderCurrEx       -- async methods for getting currency exchange rates
-#   - IProviderCryptoEx     -- async methods for getting cryptocurrency exchange rates
+#   - IDataProviderStockMarket      -- async methods for getting stock market prices
+#   - IDataProviderCurrencyEx       -- async methods for getting currency exchange rates
+#   - IDataProviderCryptoEx         -- async methods for getting cryptocurrency exchange rates
 
 
 @runtime_checkable
 class IDataProviderStockMarket(IDataProvider, Protocol):
     @abstractmethod
-    def search_stock_market(self, query: str) -> list[SearchQueryRes]:
+    async def search_stock_market(self, query: str) -> list[SearchQueryRes]:
         ...
 
     @abstractmethod
-    def get_security_by_ticker(self, ticker: str) -> StockMarketInstrument:
+    async def get_security_by_ticker(self, ticker: str) -> StockMarketInstrument:
         ...
 
 
 @runtime_checkable
 class IDataProviderCurrencyEx(IDataProvider, Protocol):
     @abstractmethod
-    def get_curr_pair(self, symbol_from: str, symbol_to: str) -> ExchangePair:
+    async def get_curr_pair(self, symbol_from: str, symbol_to: str) -> ExchangePair:
         ...
 
 
 @runtime_checkable
 class IDataProviderCryptoEx(IDataProvider, Protocol):
     @abstractmethod
-    def get_crypto_pair(self, symbol_from: str, symbol_to: str) -> ExchangePair:
+    async def get_crypto_pair(self, symbol_from: str, symbol_to: str) -> ExchangePair:
         ...
