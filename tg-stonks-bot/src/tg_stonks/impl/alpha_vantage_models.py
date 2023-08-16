@@ -3,7 +3,11 @@ from typing import Optional
 
 from pydantic import Field, field_validator
 
-from .data_providers.models import StockMarketInstrument, SearchQueryRes, ExchangePair
+from tg_stonks.providers.models import (
+    StockMarketInstrument,
+    SearchQueryRes,
+    ExchangePair
+)
 
 
 # noinspection DuplicatedCode

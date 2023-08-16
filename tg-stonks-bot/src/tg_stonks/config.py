@@ -1,7 +1,7 @@
-from tg_stonks_bot import creds
+from tg_stonks.utils import creds
 
 # ensure needed environment variables are loaded
-creds.load_env_file("../secret/.env")
+creds.load_env_file("../../secret/.env")
 
 TELEGRAM_API_ID = creds.get_from_env("TELEGRAM_API_ID")
 TELEGRAM_API_HASH = creds.get_from_env("TELEGRAM_API_HASH")

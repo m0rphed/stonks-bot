@@ -5,7 +5,7 @@ from loguru import logger
 from realtime.channel import Channel
 from realtime.connection import Socket
 
-from database_listener import IDatabaseListener
+from tg_stonks.upd_listener.protocol import IDatabaseListener
 
 
 @final
@@ -47,7 +47,7 @@ class SupabaseListener(IDatabaseListener):
                 " channel not set up: run 'set_up' method first"
             )
 
-        tg, db = kwargs.get("tg_client"), kwargs.get("database")
+        tg, db = kwargs.get("tg_client"), kwargs.get("../database")
         if tg is None or db is None:
             raise RuntimeError(
                 "Required kwargs not specified:"

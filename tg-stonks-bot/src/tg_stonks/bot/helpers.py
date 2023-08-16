@@ -1,9 +1,9 @@
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 
-from data_providers.protocols import IDataProvider
-from data_providers.provider_type import ProviderT
-from database.user_settings import DataProviderConfig
-from formatting import msg_error
+from tg_stonks.providers.protocols import IDataProvider
+from tg_stonks.providers.provider_type import ProviderT
+from tg_stonks.database.user_settings import DataProviderConfig
+from tg_stonks.bot.formatting import msg_error
 
 
 def confirmation_markup(cb_data_confirmed: str, cb_data_canceled: str) -> InlineKeyboardMarkup:

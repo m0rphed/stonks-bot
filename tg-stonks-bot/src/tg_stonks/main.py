@@ -3,15 +3,18 @@ import asyncio
 from loguru import logger
 from pyrogram import Client, idle
 
-import bot_handlers_callbacks as on_cb_query
-import bot_handlers_on_msg as on_msg
-import config
-from app_container import AppContainer
-from bot_handlers_db_updates import on_instrument_update
-from tg_stonks_bot.database.protocols import IDatabase
-from db_listener_supabase import SupabaseListener
-from tg_stonks_bot.supabase_database import SupabaseDB
-from provider_alpha_vantage import AlphaVantageAPI
+import tg_stonks.config as config
+
+import tg_stonks.bot.handlers_callbacks as on_cb_query
+import tg_stonks.bot.handlers_messages as on_msg
+from tg_stonks.bot.app_container import AppContainer
+from tg_stonks.bot.handlers_db_updates import on_instrument_update
+
+from tg_stonks.database.protocols import IDatabase
+
+from tg_stonks.impl.alpha_vantage_provider import AlphaVantageAPI
+from tg_stonks.impl.supabase_database import SupabaseDB
+from tg_stonks.impl.supabase_listener import SupabaseListener
 
 BOT_SESSION_NAME = "stonks-tg-stonks-bot"
 

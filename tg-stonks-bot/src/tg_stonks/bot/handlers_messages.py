@@ -10,23 +10,23 @@ from pyrogram.types import (
 )
 from returns.result import Failure, Success, Result
 
-from app_container import AppContainer
-from bot_helpers import (
+from tg_stonks.bot.app_container import AppContainer
+from tg_stonks.bot.helpers import (
     confirmation_markup,
     cancel_btn,
     _running_without_providers
 )
-from data_providers.models import SearchQueryRes
-from database.entity_models import InstrumentType, InstrumentEntity, create_tracking_obj
-from database.errors import DbError
-from database.helpers import (
+from tg_stonks.providers.models import SearchQueryRes
+from tg_stonks.database.entity_models import InstrumentType, InstrumentEntity, create_tracking_obj
+from tg_stonks.database.errors import DbError
+from tg_stonks.database.helpers import (
     res_to_instrument,
     try_get_user_by_id,
     try_get_settings_of_user,
     ensure_awaited
 )
-from database.user_settings import UserSettings
-from formatting import (
+from tg_stonks.database.user_settings import UserSettings
+from tg_stonks.bot.formatting import (
     msg_error,
     msg_warning,
     msg_ok,

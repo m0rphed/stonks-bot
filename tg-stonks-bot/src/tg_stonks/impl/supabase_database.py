@@ -4,9 +4,9 @@ from loguru import logger
 from postgrest import APIResponse, APIError
 from supabase import Client as SbClient
 
-from database.entity_models import InstrumentType
-from database.errors import DbError, DbUserNotFound
-from database.protocols import IDatabase
+from tg_stonks.database.entity_models import InstrumentType
+from tg_stonks.database.errors import DbError, DbUserNotFound
+from tg_stonks.database.protocols import IDatabase
 
 
 def _expected_exactly_one(resp: APIResponse) -> dict:

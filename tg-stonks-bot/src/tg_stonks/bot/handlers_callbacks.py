@@ -4,10 +4,10 @@ from pyrogram import Client
 from pyrogram.handlers import CallbackQueryHandler
 from pyrogram.types import CallbackQuery
 
-import custom_filters as flt
-from app_container import AppContainer
-from bot_helpers import chose_provider_markup
-from formatting import msg_error, msg_ok
+import tg_stonks.bot.custom_filters as flt
+from tg_stonks.bot.app_container import AppContainer
+from tg_stonks.bot.helpers import chose_provider_markup
+from tg_stonks.bot.formatting import msg_error, msg_ok
 
 
 async def provider_set_handler(_client: Client, query: CallbackQuery, app: AppContainer):

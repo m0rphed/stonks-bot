@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 
-from data_providers.helpers import by_name, filter_by_implementation
-from data_providers.protocols import IDataProvider, IDataProviderStockMarket
-from database.protocols import IDatabase
+from tg_stonks.providers.helpers import by_name, filter_by_implementation
+from tg_stonks.providers.protocols import IDataProvider, IDataProviderStockMarket
+from tg_stonks.database.protocols import IDatabase
 
 
 @dataclass(frozen=True)
