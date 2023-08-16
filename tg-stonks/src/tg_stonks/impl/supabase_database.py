@@ -24,6 +24,7 @@ def _expected_exactly_one(resp: APIResponse) -> dict:
         )
 
 
+@final
 class SupabaseDB(IDatabase):
     def __init__(self, url: str, key: str):
         self.sb_client: SbClient = SbClient(
