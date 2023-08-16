@@ -5,12 +5,10 @@ from pyrogram import Client, idle
 
 import tg_stonks.config as config
 
-import tg_stonks.bot.handlers_callbacks as on_cb_query
-import tg_stonks.bot.handlers_messages as on_msg
+import tg_stonks.bot.handlers_callbacks as handle_cb
+import tg_stonks.bot.handlers_messages as handle_msg
 from tg_stonks.bot.app_container import AppContainer
 from tg_stonks.bot.handlers_db_updates import on_instrument_update
-
-from tg_stonks.database.protocols import IDatabase
 
 from tg_stonks.impl.alpha_vantage_provider import AlphaVantageAPI
 from tg_stonks.impl.supabase_database import SupabaseDB
@@ -18,7 +16,7 @@ from tg_stonks.impl.supabase_listener import SupabaseListener
 
 BOT_SESSION_NAME = "stonks-tg-stonks"
 
-db: IDatabase = SupabaseDB(
+db = SupabaseDB(
     url=config.SUPABASE_URL,
     key=config.SUPABASE_KEY
 )
@@ -66,10 +64,10 @@ async def start_main_bot():
         bot_token=config.TELEGRAM_BOT_TOKEN
     )
 
-    for command_handler in on_msg.get_commands(app):
+    for command_handler in handle_msg.get_commands(app):
         c_main.add_handler(command_handler)
 
-    for cb_query_handler in on_cb_query.get_callbacks_handlers(app):
+    for cb_query_handler in handle_cb.get_callbacks_handlers(app):
         c_main.add_handler(cb_query_handler)
 
     await c_main.start()
