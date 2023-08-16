@@ -24,8 +24,3 @@ def get_from_env(key: str, env_file_path: str | None = None) -> str | None:
 
     # raise error if ENV VAR not set
     raise ValueError(f"Environment variable '{key}' not set.")
-
-
-if __name__ == "__main__":
-    # TODO: write some tests
-    print("maybe some tests here, huh?")

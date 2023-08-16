@@ -25,22 +25,3 @@ def filter_by_implementation(providers: list[IDataProvider], prov_class) -> list
             filtered.append(prov)
 
     return filtered
-
-
-if __name__ == "__main__":
-    from tg_stonks.impl.alpha_vantage_provider import AlphaVantageAPI
-
-    xs = [
-        AlphaVantageAPI("fake_key_01"),
-        AlphaVantageAPI("fake_key_02"),
-        AlphaVantageAPI("fake_key_03"),
-        AlphaVantageAPI("fake_key_04")
-    ]
-
-    flt = filter_by_type(xs, ProviderT.UNIVERSAL)
-    assert len(flt), len(xs)
-
-    flt = filter_by_implementation([AlphaVantageAPI("fake_key")], IDataProvider)
-    assert len(flt), 1
-
-    print("all tests passed")
