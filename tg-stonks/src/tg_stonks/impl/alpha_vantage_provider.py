@@ -37,7 +37,11 @@ class ClientCryptoEx(ApiClientMiddleware):
 
 
 @final
-class AlphaVantageAPI(IDataProviderStockMarket, IDataProviderCurrencyEx, IDataProviderCryptoEx):
+class AlphaVantageAPI(
+    IDataProviderStockMarket,
+    IDataProviderCurrencyEx,
+    IDataProviderCryptoEx
+):
     data_provider_name: str = "alpha_vantage"
 
     @property
