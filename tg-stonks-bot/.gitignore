@@ -239,5 +239,5 @@ data/
 *.session*
 
 # ignore temporary snippets
-_temp_/
+src/tg_stonks/_temp_/
 _temp_*.py
