@@ -41,7 +41,7 @@ class TrackingEntity(BaseModel):
     notify_daily_at: Optional[datetime.datetime]
 
 
-def create_tracking_obj(
+def make_tracking_obj_of_instrument(
         user: UserEntity,
         instrument: InstrumentEntity,
         on_price: float | None = None,

@@ -17,7 +17,11 @@ from tg_stonks.bot.helpers import (
     _running_without_providers
 )
 from tg_stonks.providers.models import SearchQueryRes
-from tg_stonks.database.entity_models import InstrumentType, InstrumentEntity, create_tracking_obj
+from tg_stonks.database.entity_models import (
+    InstrumentType,
+    InstrumentEntity,
+    make_tracking_obj_of_instrument
+)
 from tg_stonks.database.errors import DbError
 from tg_stonks.database.helpers import (
     res_to_instrument,
@@ -300,7 +304,7 @@ async def cmd_track_stock(_client: Client, message: Message, app: AppContainer):
             )
 
             if isinstance(instr_res, Success):
-                tracking_obj = create_tracking_obj(
+                tracking_obj = make_tracking_obj_of_instrument(
                     user=settings.unwrap(),
                     instrument=instr_res.unwrap(),
                     on_price=price,
@@ -319,7 +323,7 @@ async def cmd_track_stock(_client: Client, message: Message, app: AppContainer):
                     }
                 ))).unwrap()
 
-                tracking_obj = create_tracking_obj(
+                tracking_obj = make_tracking_obj_of_instrument(
                     user=settings.unwrap(),
                     instrument=instr,
                     on_price=price,
