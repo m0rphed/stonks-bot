@@ -57,7 +57,7 @@ async def confirmed_delete_me(_client: Client, query: CallbackQuery, app: AppCon
         msg_ok(
             f"Successfully deleted ALL DATA of: {query.from_user.first_name}!"
             "\nYou can now delete this chat"
-            "\nOR you could start using this tg-stonks-bot again 👉 `/sign_in_tg` command"
+            "\nOR you could start using this bot again 👉 `/sign_in_tg` command"
         )
     )
     await query.message.delete()

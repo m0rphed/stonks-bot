@@ -1,6 +1,6 @@
 [project]
-name = ""
-version = ""
+name = "tg-stonks"
+version = "0.0.1"
 description = ""
 authors = [
     {name = "Vic Khov", email = "victorkhovtko@gmail.com"},

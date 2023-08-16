@@ -16,7 +16,7 @@ from tg_stonks.impl.alpha_vantage_provider import AlphaVantageAPI
 from tg_stonks.impl.supabase_database import SupabaseDB
 from tg_stonks.impl.supabase_listener import SupabaseListener
 
-BOT_SESSION_NAME = "stonks-tg-stonks-bot"
+BOT_SESSION_NAME = "stonks-tg-stonks"
 
 db: IDatabase = SupabaseDB(
     url=config.SUPABASE_URL,

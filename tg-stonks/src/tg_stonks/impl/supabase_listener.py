@@ -47,11 +47,12 @@ class SupabaseListener(IDatabaseListener):
                 " channel not set up: run 'set_up' method first"
             )
 
-        tg, db = kwargs.get("tg_client"), kwargs.get("../database")
+        tg, db = kwargs.get("tg_client"), kwargs.get("database")
         if tg is None or db is None:
             raise RuntimeError(
                 "Required kwargs not specified:"
-                "\n  - 'tg_client': pyrogram tg-stonks-bot client (should be set up with credentials, but have not yet started)"
+                "\n  - 'tg_client': pyrogram bot client"
+                " (should be set up with credentials, but have not yet started)"
                 "\n  - 'database': database provider impl. 'IDatabase'"
             )
 
