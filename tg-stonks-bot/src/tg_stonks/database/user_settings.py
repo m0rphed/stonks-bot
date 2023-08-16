@@ -1,6 +1,6 @@
 from typing import Optional
 
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, field_validator
 
 from tg_stonks.providers.provider_type import ProviderT
 
@@ -11,7 +11,7 @@ class DataProviderConfig(BaseModel):
     user_credentials: bool = False
     own_credentials: Optional[dict] = None
 
-    @validator("own_credentials", pre=True)
+    @field_validator("own_credentials", mode="before")
     def prevent_none(cls, value):
         assert value is not None, \
             "'own_credentials' shouldn't be" \
@@ -29,7 +29,7 @@ class UserSettings(BaseModel):
     provider_crypto: Optional[DataProviderConfig] = None
     other_settings: Optional[dict] = None
 
-    @validator("other_settings", pre=True)
+    @field_validator("other_settings", mode="before")
     def prevent_none(cls, value):
         assert value is not None, \
             "'other_settings' shouldn't be" \
@@ -38,9 +38,9 @@ class UserSettings(BaseModel):
 
     def is_all_providers_null(self):
         return (
-            self.provider_stock_market is None
-            and self.provider_currency is None
-            and self.provider_crypto is None
+                self.provider_stock_market is None
+                and self.provider_currency is None
+                and self.provider_crypto is None
         )
 
     def to_markdown(self) -> str:
@@ -64,12 +64,12 @@ class UserSettings(BaseModel):
         prov_cryp = ns if cryp is None else cryp.to_markdown()
 
         return (
-            msg_beg +
-            "\n➜ Providers:"
-            f"\n• of stock market data: {prov_sm}"
-            f"\n• of foreign currencies data: {prov_curr}"
-            f"\n• of cryptocurrencies data: {prov_cryp}"
-            + msg_end
+                msg_beg +
+                "\n➜ Providers:"
+                f"\n• of stock market data: {prov_sm}"
+                f"\n• of foreign currencies data: {prov_curr}"
+                f"\n• of cryptocurrencies data: {prov_cryp}"
+                + msg_end
         )
 
 
