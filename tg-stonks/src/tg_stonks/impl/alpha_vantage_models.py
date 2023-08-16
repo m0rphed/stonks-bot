@@ -5,8 +5,8 @@ from pydantic import Field, field_validator
 
 from tg_stonks.providers.models import (
     StockMarketInstrument,
+    ExchangePair,
     SearchQueryRes,
-    ExchangePair
 )
 
 
@@ -22,23 +22,6 @@ class StockMarketInstrumentAV(StockMarketInstrument):   # may contain a stock, b
     prev_close: float                   = Field(alias="08. previous close")
     change: float                       = Field(alias="09. change")
     change_percent: str                 = Field(alias="10. change percent")
-
-
-class SearchQueryResAV(SearchQueryRes):
-    symbol: str                         = Field(alias="1. symbol")
-    name: str                           = Field(alias="2. name")
-    instrument_type: str                = Field(alias="3. type")
-    region: Optional[str]               = Field(alias="4. region")
-    market_open: str                    = Field(alias="5. marketOpen")
-    market_close: str                   = Field(alias="6. marketClose")
-    timezone: str                       = Field(alias="7. timezone")
-    currency: Optional[str]             = Field(alias="8. currency")
-
-    def to_markdown(self) -> str:
-        md_str_end = \
-            f"\n• ⏰ Open from __{self.market_open}__ to __{self.market_close}__" \
-            f"\n• Timezone: {self.timezone}"
-        return super().to_markdown() + md_str_end
 
 
 class ExchangePairAV(ExchangePair):
@@ -63,3 +46,20 @@ class ExchangePairAV(ExchangePair):
         if value == "-":
             return None
         return value
+
+
+class SearchQueryResAV(SearchQueryRes):
+    symbol: str                         = Field(alias="1. symbol")
+    name: str                           = Field(alias="2. name")
+    instrument_type: str                = Field(alias="3. type")
+    region: Optional[str]               = Field(alias="4. region")
+    market_open: str                    = Field(alias="5. marketOpen")
+    market_close: str                   = Field(alias="6. marketClose")
+    timezone: str                       = Field(alias="7. timezone")
+    currency: Optional[str]             = Field(alias="8. currency")
+
+    def to_markdown(self) -> str:
+        md_str_end = \
+            f"\n• ⏰ Open from __{self.market_open}__ to __{self.market_close}__" \
+            f"\n• Timezone: {self.timezone}"
+        return super().to_markdown() + md_str_end

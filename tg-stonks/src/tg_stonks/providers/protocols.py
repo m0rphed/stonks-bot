@@ -2,7 +2,11 @@ from abc import abstractmethod
 from typing import Protocol, runtime_checkable
 
 from tg_stonks.providers.provider_type import ProviderT
-from tg_stonks.providers.models import ExchangePair, StockMarketInstrument, SearchQueryRes
+from tg_stonks.providers.models import (
+    StockMarketInstrument,
+    ExchangePair,
+    SearchQueryRes
+)
 
 
 # Base protocol for data providers

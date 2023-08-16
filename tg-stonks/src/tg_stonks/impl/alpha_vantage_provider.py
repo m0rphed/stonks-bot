@@ -6,8 +6,8 @@ from alpha_vantage.async_support.timeseries import TimeSeries as TimeSeriesAsync
 
 from tg_stonks.impl.alpha_vantage_models import (
     StockMarketInstrumentAV,
-    SearchQueryResAV,
-    ExchangePairAV
+    ExchangePairAV,
+    SearchQueryResAV
 )
 from tg_stonks.providers.api_client_middleware import ApiClientMiddleware
 from tg_stonks.providers.protocols import (
