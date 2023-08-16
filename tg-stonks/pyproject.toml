@@ -23,14 +23,17 @@ readme = "README.md"
 license = { text = "MIT" }
 
 [tool.pdm.dev-dependencies]
+
 tools = [
     "mypy>=1.5.0",
     "isort>=5.12.0",
 ]
+
 plotting = [
     "pandas>=2.0.3",
     # "matplotlib==3.7.2",
 ]
+
 testing = [
     "pytest>=7.4.0",
     "coverage[toml]>=7.3.0",
@@ -51,6 +54,9 @@ where = ["src"]
 
 [tool.coverage.paths]
 source = ["src", "*/site-packages"]
+
+[tool.pytest.ini_options] # see: https://docs.pytest.org/en/7.1.x/reference/reference.html#confval-pythonpath
+pythonpath = "src/"
 
 [tool.coverage.run]
 branch = true
