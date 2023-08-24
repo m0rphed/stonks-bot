@@ -1,7 +1,7 @@
-from typing import final
+from typing import final, Any
 
 from loguru import logger
-from postgrest import APIResponse, APIError
+from postgrest import APIResponse, APIError, SyncSelectRequestBuilder
 from supabase import Client as SbClient
 
 from tg_stonks.database.entity_models import InstrumentType
@@ -22,6 +22,12 @@ def _expected_exactly_one(resp: APIResponse) -> dict:
             "Query expected to return exactly one result,"
             " but returned multiple rows"
         )
+
+
+def build_select_query(query: SyncSelectRequestBuilder, fields: dict[str, Any]):
+    for key, value in fields.items():
+        query.eq(key, value)
+    return query
 
 
 @final
@@ -47,9 +53,10 @@ class SupabaseDB(IDatabase):
         return resp
 
     def user_with(self, fields: dict) -> list[dict]:
-        query = self.sb_client.table("bot_users").select("*")
-        for key, value in fields.items():
-            query.eq(key, value)
+        query = build_select_query(
+            self.sb_client.table("bot_users").select("*"),
+            fields
+        )
 
         resp = query.execute()
         return resp.data
