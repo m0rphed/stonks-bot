@@ -12,9 +12,9 @@ from returns.result import Failure, Success, Result
 
 from tg_stonks.bot.app_container import AppContainer
 from tg_stonks.bot.helpers import (
-    confirmation_markup,
-    cancel_btn,
-    _running_without_providers
+    markup_confirmation,
+    btn_cancel,
+    reply_running_without_providers
 )
 from tg_stonks.providers.models import SearchQueryRes
 from tg_stonks.database.entity_models import (
@@ -56,7 +56,7 @@ async def cmd_delete_me(_client: Client, message: Message, app: AppContainer):
         return
 
     # if user exist - we should prepare confirmation markup
-    confirmation = confirmation_markup(
+    confirmation = markup_confirmation(
         "confirmed --cmd delete_me",
         "canceled --cmd delete_me"
     )
@@ -101,7 +101,7 @@ async def cmd_settings(_client: Client, message: Message, app: AppContainer):
 
 async def cmd_set_providers(_client: Client, message: Message, app: AppContainer):
     if len(app.data_providers) == 0:
-        await _running_without_providers(message)
+        await reply_running_without_providers(message)
         return
 
     buttons = []
@@ -115,7 +115,7 @@ async def cmd_set_providers(_client: Client, message: Message, app: AppContainer
 
     # add cancellation button
     buttons.append(
-        [cancel_btn("--cmd prvs")]
+        [btn_cancel("--cmd prvs")]
     )
 
     await message.reply(
@@ -126,7 +126,7 @@ async def cmd_set_providers(_client: Client, message: Message, app: AppContainer
 
 async def cmd_providers(_client: Client, message: Message, app: AppContainer):
     if len(app.data_providers) == 0:
-        await _running_without_providers(message)
+        await reply_running_without_providers(message)
         return
 
     await message.reply(
@@ -214,7 +214,7 @@ async def cmd_search_stock_market(_client: Client, message: Message, app: AppCon
 
             # TODO: handle case when specified provider
             #  is not available or provider name was simply set incorrectly
-            sm_prov = app.stock_market_provider_by_name(
+            sm_prov = app.provider_stock_market_by_name(
                 settings.provider_stock_market.name
             )
 
@@ -292,7 +292,7 @@ async def cmd_track_stock(_client: Client, message: Message, app: AppContainer):
 
             # TODO: handle case when specified provider
             #  is not available or provider name was simply set incorrectly
-            sm_prov = app.stock_market_provider_by_name(
+            sm_prov = app.provider_stock_market_by_name(
                 settings.provider_stock_market.name
             )
 
