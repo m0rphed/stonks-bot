@@ -6,8 +6,7 @@ from typing import Protocol, runtime_checkable
 class IDatabase(Protocol):
     @abstractmethod
     def user_with(self, fields: dict) -> list[dict]:
-        """Get user from 'bot_users' table with matching fields;
-        Returns a list of users matching by specified fields
+        """Select users from 'bot_users' table which fields values match specified dictionary
         """
         ...
 
