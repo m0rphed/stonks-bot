@@ -113,6 +113,9 @@ ipython_config.py
 #   in version control.
 #   https://pdm.fming.dev/#use-with-ide
 .pdm.toml
+# ignore PDM file containing full path to interpreter
+.pdm-python
+.pdm-build/
 
 # PEP 582; used by e.g. github.com/David-OConnor/pyflow and github.com/pdm-project/pdm
 __pypackages__/
@@ -223,9 +226,6 @@ $RECYCLE.BIN/
 
 # Custom rules (everything added below won't be overriden by 'Generate .gitignore File' if you use 'Update' option)
 
-# ignore PDM file containing full path to interpreter
-.pdm-python
-
 # hide secret keys or place it in ENV var
 secret/
 
@@ -239,4 +239,5 @@ data/
 *.session*
 
 # ignore temporary snippets
+src/tg_stonks/_temp_/
 _temp_*.py
