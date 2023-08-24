@@ -1,10 +1,12 @@
-import tg_stonks.utils.creds as creds
-from tg_stonks.impl.alpha_vantage_provider import AlphaVantageAPI
+import pytest
 import pprint
 
-import pytest
+import tg_stonks.utils.creds as creds
+from tg_stonks.impl.alpha_vantage_provider import AlphaVantageAPI
 
-pytest_plugins = ('pytest_asyncio',)
+pytest_plugins = (
+    'pytest_asyncio',
+)
 
 
 @pytest.mark.asyncio
@@ -18,6 +20,7 @@ async def test_search_stock_market_not_empty():
         dumped.append(res.model_dump(mode="python"))
         assert res.data_provider == av_api.data_provider_name
 
-    assert not len(query_res) == 0
     for x in dumped:
         pprint.pprint(x)
+
+    assert not len(query_res) == 0
