@@ -1,6 +1,7 @@
 import emoji
 
 from tg_stonks.providers.protocols import IDataProvider
+import datetime as dt
 
 
 def msg_warning(msg: str) -> str:
@@ -65,3 +66,28 @@ def msg_list_providers(providers: list[IDataProvider]) -> str:
         prov_type = available_prov.provider_type
         msg += f"\n• `{name}` 👉 {prov_type.description}"
     return msg
+
+
+def msg_instrument_updated(instrument_obj: dict, tracking_obj: dict) -> str:
+    res_str = "⚡️**Instrument updated**⚡️\n"
+    res_str += f"\n• 👉 --Ticker / symbol--: `{instrument_obj['symbol']}`\n"
+    res_str += f"\n• 🕓 Updated at: *{instrument_obj['updated_at']}*"
+
+    if tracking_obj.get("on_price") is not None:
+        res_str += f"\n• 🔔 Notify on price: `{tracking_obj['on_price']}`"
+
+    if tracking_obj.get("on_rate") is not None:
+        res_str += f"\n• 🔔 Notify on rate: `{tracking_obj['on_rate']}`"
+
+    if instrument_obj.get("price") is not None:
+        res_str += f"\n• 💸 Current price `{instrument_obj['price']}`"
+
+    if instrument_obj.get("exchange_rate") is not None:
+        res_str += f"\n• 💱 Current exchange rate: `{instrument_obj['exchange_rate']}`"
+
+    if instrument_obj.get("figi_code") is not None:
+        res_str += f"\n• 🔑 The FIGI Code is: `{instrument_obj['figi_code']}`"
+
+    # last_upd_at = dt.datetime.fromisoformat(instrument_obj["updated_at"])
+    res_str += f"\n• 🔮 Data from: `{instrument_obj['data_provider_code']}`"
+    return res_str
