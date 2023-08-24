@@ -1,9 +1,10 @@
 import datetime
 from enum import unique, StrEnum
 from typing import Optional
-from uuid import UUID, uuid4
+from uuid import uuid4
 
 from pydantic import BaseModel, Field
+from pydantic.types import UUID4
 
 
 @unique
@@ -63,8 +64,8 @@ class TrackingEntity(BaseModel):
     """
     id: UUID4 = Field(default_factory=uuid4)
     created_at: datetime.datetime
-    instrument: UUID = Field(default_factory=uuid4)
-    tracked_by: UUID = Field(default_factory=uuid4)
+    instrument: UUID4 = Field(default_factory=uuid4)
+    tracked_by: UUID4 = Field(default_factory=uuid4)
     on_price: float | None
     on_rate: float | None
     notify_daily_at: Optional[datetime.datetime]
