@@ -68,7 +68,7 @@ class TrackingEntity(BaseModel):
     tracked_by: UUID4 = Field(default_factory=uuid4)
     on_price: float | None
     on_rate: float | None
-    notify_daily_at: Optional[datetime.datetime]
+    notify_every: Optional[str] = None
 
 
 def make_tracking_obj_of_instrument(
@@ -76,12 +76,12 @@ def make_tracking_obj_of_instrument(
         instrument: InstrumentEntity,
         on_price: float | None = None,
         on_rate: float | None = None,
-        notify_daily_at: datetime.datetime | None = None) -> dict:
+        notify_every: str | None = None) -> dict:
     # set everything except "id", and "created_at" field
     return {
         "instrument": str(instrument.id),
         "tracked_by": str(user.id),
         "on_price": on_price,
         "on_rate": on_rate,
-        "notify_daily_at": notify_daily_at
+        "notify_every": notify_every
     }
