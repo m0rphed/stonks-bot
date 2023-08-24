@@ -8,7 +8,7 @@ import tg_stonks.config as config
 import tg_stonks.bot.handlers_callbacks as handle_cb
 import tg_stonks.bot.handlers_messages as handle_msg
 from tg_stonks.bot.app_container import AppContainer
-from tg_stonks.bot.handlers_db_updates import on_instrument_update
+from tg_stonks.bot.handlers_db_updates import notify_on_instrument_upd
 
 from tg_stonks.impl.alpha_vantage_provider import AlphaVantageAPI
 from tg_stonks.impl.supabase_database import SupabaseDB
@@ -46,7 +46,7 @@ async def start_listener():
     )
 
     lis.add_callback(
-        "UPDATE", on_instrument_update,
+        "UPDATE", notify_on_instrument_upd,
         tg_client=c_for_listener,
         database=db
     )

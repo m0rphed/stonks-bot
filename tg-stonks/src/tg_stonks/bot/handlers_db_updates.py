@@ -1,34 +1,41 @@
-from typing import Any
-
 from loguru import logger
 from pyrogram import Client as PyrogramClient
 
-from tg_stonks.database import helpers as db_helpers
+from tg_stonks.bot.formatting import msg_instrument_updated
+from tg_stonks.utils.other import ensure_has_key
+# TODO: user model paring with errors
+# from tg_stonks.database.helpers import to_user
 from tg_stonks.database.protocols import IDatabase
 
 
-def _get_or_raise(the_kwargs: dict, key: str) -> Any:
-    found = the_kwargs.get(key)
-    if found is None:
-        raise RuntimeError(
-            "Could not handle database updates:"
-            f" argument '{key}' not specified"
-            " to callback function"
+async def notify_on_instrument_upd(payload: dict, **kwargs):
+    instrument_obj = payload["record"]
+    tg_client: PyrogramClient = ensure_has_key(kwargs, "tg_client")
+    database: IDatabase = ensure_has_key(kwargs, "database")
+
+    # TODO: here we run multiple queries to determine which user
+    #   or users should be notified on instrument price/rate update
+    #   -> Instead, it's should be rewritten
+    #   using more efficient query - with JOINs (if possible)
+    matched_trackings = database.trackings_with({
+        "instrument": instrument_obj["id"]
+    })
+
+    # every user that have a tracking that
+    for tracking_obj in matched_trackings:
+        logger.info(f"User with id: '{tracking_obj['tracked_by']}' has a tracking:")
+        logger.info(tracking_obj)
+
+        users_who_track = database.user_with({
+            "id": tracking_obj["tracked_by"]
+        })
+
+        # inner DB id is unique for each user - so it's gotta be exactly one user
+        user = users_who_track[0]
+        await tg_client.send_message(
+            user["tg_user_id"],
+            msg_instrument_updated(
+                instrument_obj=instrument_obj,
+                tracking_obj=tracking_obj
+            )
         )
-    return found
-
-
-async def on_instrument_update(payload: dict, **kwargs):
-    instr_obj = payload["record"]
-    tg_client: PyrogramClient = _get_or_raise(kwargs, "tg_client")
-    idb: IDatabase = _get_or_raise(kwargs, "database")
-    matched_tracking: list[dict] = idb.trackings_with({"instrument": instr_obj["id"]})
-    for trk in matched_tracking:
-        db_user_id = trk["tracked_by"]
-        logger.info(f"Inner database user id: {db_user_id}\n\t=> tracking: {trk}")
-
-        user_obj = idb.user_with({"id": db_user_id})
-        user = db_helpers.to_user(user_obj)
-        logger.info(f"telegram user id: {user.tg_user_id}\n\t=> of user: {user.id}")
-
-        await tg_client.send_message(user.tg_user_id, f"current price: {instr_obj['price']}\n\n" + str(trk))
