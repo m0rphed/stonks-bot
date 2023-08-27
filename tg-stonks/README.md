@@ -20,7 +20,7 @@ TODO:
   - [ ] research: use of *Binance Token* possibility  
 - [ ] provide docker file
 - [ ] impl. **scheduling and notification mechanism** using something like *supabase / firebase functions*
-- [ ] impl. `/crypto` show tracked 
+- [ ] impl. `/crypto` show tracked cryptocurrencies
 
 Secondary stuff:
 
