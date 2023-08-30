@@ -3,7 +3,7 @@ from typing import final
 
 class DbError(Exception):
     """
-    Database exception. Should only be raised when unspecified && unexpected error
+    Database exception. Should be raised only if unspecified && unexpected error
     happened while working with the database.
 
     Also, all other exceptions related to the operation
@@ -26,6 +26,15 @@ class DbInstrumentNotFound(DbError):
     """
     Should be raised when instrument was not found in the table storing
     financial instruments of the database schema.
+    """
+    pass
+
+
+@final
+class DbTrackingNotFound(DbError):
+    """
+    Should be raised when tracking was not found in the table storing
+    tracking orders of financial instruments created by bot users.
     """
     pass
 

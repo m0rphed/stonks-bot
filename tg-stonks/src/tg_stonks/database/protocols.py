@@ -5,7 +5,7 @@ from typing import Protocol, runtime_checkable
 @runtime_checkable
 class IDatabase(Protocol):
     @abstractmethod
-    def user_with(self, fields: dict) -> list[dict]:
+    def users_which(self, fields: dict) -> list[dict]:
         """Select users from 'bot_users' table which fields values match specified dictionary
         """
         ...
@@ -18,7 +18,7 @@ class IDatabase(Protocol):
         ...
 
     @abstractmethod
-    def settings_of_tg_id(self, tg_user_id: int) -> dict:
+    def settings_of_tg_user_id(self, tg_user_id: int) -> dict:
         """Get settings (user's settings stored in JSON) of the user with specified 'tg_user_id' field;
         Expected exactly one user = exactly one user settings JSON
         """

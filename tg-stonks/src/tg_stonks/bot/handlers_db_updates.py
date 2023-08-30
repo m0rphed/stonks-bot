@@ -26,7 +26,7 @@ async def notify_on_instrument_upd(payload: dict, **kwargs):
         logger.info(f"User with id: '{tracking_obj['tracked_by']}' has a tracking:")
         logger.info(tracking_obj)
 
-        users_who_track = database.user_with({
+        users_who_track = database.users_which({
             "id": tracking_obj["tracked_by"]
         })
 

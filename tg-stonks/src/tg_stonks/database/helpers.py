@@ -70,7 +70,7 @@ def try_get_user_by_id(db: IDatabase, tg_user_id: int):
 
 @safe
 def try_get_settings_of_user(db: IDatabase, tg_user_id: int):
-    settings: dict = db.settings_of_tg_id(tg_user_id)
+    settings: dict = db.settings_of_tg_user_id(tg_user_id)
 
     # 'settings' column could be NULL
     # - so, this should prevent validation error
@@ -89,7 +89,7 @@ def try_get_settings_of_user(db: IDatabase, tg_user_id: int):
 
 @safe
 def try_get_provider(db: IDatabase, tg_user_id: int, provider_t: str):
-    settings: dict = db.settings_of_tg_id(tg_user_id)
+    settings: dict = db.settings_of_tg_user_id(tg_user_id)
     prov_conf_obj = settings.get(provider_t)
     if prov_conf_obj is not None:
         return DataProviderConfig.model_validate(
